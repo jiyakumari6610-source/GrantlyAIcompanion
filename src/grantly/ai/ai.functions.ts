@@ -31,7 +31,12 @@ export const copilotChatFn = createServerFn({ method: 'POST' })
     if (input.message.length > 4000) throw new Error('Message is too long');
     return input;
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { data: catRows } = await context.supabase.from('scholarships').select('data').limit(50);
+    const catalog = (catRows || [])
+      .map((r: any) => r.data || {})
+      .map((c: any) => `- [${c.verificationStatus || 'UNVERIFIED'}] ${c.name} | Provider: ${c.provider} | Award: ₹${c.awardAmount} | Deadline: ${c.deadline || 'not listed'} | Min marks: ${c.minMarks ?? 'n/a'}% | Max income: ₹${c.maxIncome ?? 'n/a'} | Categories: ${(c.categories || []).join('/')} | States: ${(c.eligibleStates || []).join('/')} | Docs: ${(c.requiredDocuments || []).join('; ')} | Official link: ${c.officialSourceUrl || 'not listed'} | Last checked: ${c.lastCheckedAt || 'n/a'}`)
+      .join('\n');
     const p = data.studentProfile;
     const studentContext = p
       ? `Student Profile Context:
@@ -63,6 +68,12 @@ Key Guidelines:
 4. If asked "Which scholarships am I eligible for?", reference their profile marks and income explicitly.
 5. If asked about required documents, break them down clearly: Marksheet, Income Certificate, Domicile/Bonafide, Caste Certificate (if applicable), Aadhaar.
 6. Keep formatting neat with concise bullet points, bold key terms, and actionable next steps.
+7. Only state deadlines, eligibility rules, amounts and official links that appear in the GRANTLY CATALOG below. Never invent them. If something isn't in the catalog, say you don't have verified details and suggest checking the official portal.
+8. Structure answers with two clearly labelled sections when relevant: "✅ Verified (from Grantly catalog)" for catalog facts (mention the last-checked date), and "💡 General guidance" for general advice.
+9. Reply in the language the student writes in (simple English or simple Hindi).
+
+GRANTLY CATALOG:
+${catalog || '(catalog unavailable)'}
 
 ${studentContext}
 ${scholarshipContext}`;
@@ -82,11 +93,11 @@ ${scholarshipContext}`;
       return { reply, source: MODEL };
     } catch (err) {
       console.error('Copilot AI error:', err instanceof GatewayError ? err.code : err);
-      return {
-        reply:
-          'Grantly Copilot is temporarily unavailable. Please try again in a moment. Meanwhile, you can explore the **AI Matcher** and **Document Intelligence Center**.',
-        source: 'unavailable',
-      };
+      const name = err instanceof Error ? err.name : '';
+      if (/Configuration|Authentication/.test(name)) throw new Error('AI is not configured for this project right now.');
+      if (/PaymentRequired/.test(name)) throw new Error('AI credits are exhausted. Please top up and try again.');
+      if (/RateLimit/.test(name)) throw new Error('Copilot is busy right now. Please wait a minute and try again.');
+      throw new Error('Copilot could not answer right now. Please try again.');
     }
   });
 

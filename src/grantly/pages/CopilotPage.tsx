@@ -57,6 +57,24 @@ What would you like to explore today?`,
     },
   ]);
 
+  // Preserve chat history per user in this browser
+  const historyKey = `grantly-copilot-${user?.uid || 'guest'}`;
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(historyKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length) setMessages(parsed);
+      }
+    } catch {}
+    restoredRef.current = true;
+  }, [historyKey]);
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    try { localStorage.setItem(historyKey, JSON.stringify(messages.slice(-50))); } catch {}
+  }, [messages, historyKey]);
+
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -113,20 +131,14 @@ What would you like to explore today?`,
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Chat error:', err);
       const fallbackMsg: ChatMessage = {
         id: `asst-${Date.now()}`,
         role: 'assistant',
-        text: `Based on your profile (${profile.course}, ${profile.percentage}% marks, ₹${Number(profile.annualFamilyIncome).toLocaleString('en-IN')} annual family income in ${profile.state}):
-        
-You are strongly eligible for:
-1. **Pragati Tech Fellowship for STEM** (₹50,000/yr)
-2. **National Merit-Means Higher Education Grant** (₹75,000/yr)
-3. **State Higher Education Excellence Award (Jharkhand)** (₹40,000)
-
-Make sure your **Income Certificate (FY 2024-25)** and **College Bonafide** are uploaded in the Document Center.`,
+        text: `⚠️ **No answer available.** ${err?.message || 'Copilot could not answer right now.'} Your question was not answered by AI — please try again.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        source: 'unavailable',
       };
       setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
