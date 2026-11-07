@@ -28,3 +28,11 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- Migrated Grantly app code lives in `src/grantly/` (pages, components, services, types); route files in `src/routes/` are thin wrappers. Why: keeps the imported app intact and routes declarative.
+- Pages import routing helpers from `@/lib/router-compat` (react-router-style API over TanStack Router); never add react-router-dom. Why: TanStack Router is the only router.
+- Cloud tables store app records as a `data` jsonb column keyed by user/id, mirroring the original document shapes. Why: preserves the source data model without per-field rewrites.
+- AI calls run only in `src/grantly/ai/*.functions.ts` server functions via the Lovable AI Gateway. Why: keeps keys server-side; folders named `server/` are blocked from client imports.
+- Signed-in app routes use `ssr: false` because pages read browser storage during render. Why: avoids hydration mismatches.
+- tsconfig relaxes exactOptionalPropertyTypes / noUncheckedIndexedAccess / noPropertyAccessFromIndexSignature / noImplicitReturns to match the imported code. Why: the source was written without them.

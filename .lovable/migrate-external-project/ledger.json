@@ -1,0 +1,86 @@
+[
+ {
+  "capability": "code",
+  "source": "React SPA + Express (server.ts)",
+  "outcome": "migrate to TanStack Start routes + server functions",
+  "status": "verified",
+  "next_action": ""
+ },
+ {
+  "capability": "schema",
+  "source": "Firestore users/scholarships/applications/savedScholarships/documents/reports",
+  "outcome": "migrate to Cloud tables",
+  "status": "verified",
+  "next_action": ""
+ },
+ {
+  "capability": "records",
+  "source": "Firestore (no export attached)",
+  "outcome": "migrate",
+  "status": "pending",
+  "next_action": "request Firestore JSON export; scholarship catalog seeded from bundled data"
+ },
+ {
+  "capability": "auth_identities",
+  "source": "Firebase Auth email/password + Google",
+  "outcome": "migrate to Cloud auth",
+  "status": "pending",
+  "next_action": "request Firebase Auth user export"
+ },
+ {
+  "capability": "authorization",
+  "source": "firestore.rules owner-only + admin email",
+  "outcome": "RLS + user_roles",
+  "status": "verified",
+  "next_action": "RLS isolation checked with two test users"
+ },
+ {
+  "capability": "file_bytes",
+  "source": "Firebase Storage + local vault_storage",
+  "outcome": "Cloud storage private bucket",
+  "status": "pending",
+  "next_action": "old uploaded files need re-upload or export from Firebase Storage"
+ },
+ {
+  "capability": "ai",
+  "source": "Gemini via GEMINI_API_KEY",
+  "outcome": "Lovable AI Gateway",
+  "status": "verified",
+  "next_action": "Copilot chat and document analysis checked"
+ },
+ {
+  "capability": "public_endpoints",
+  "source": "/api/* express routes",
+  "outcome": "replaced by internal server functions (only app frontend called them)",
+  "status": "verified",
+  "next_action": ""
+ },
+ {
+  "capability": "schedules_webhooks",
+  "source": "none",
+  "outcome": "none",
+  "status": "verified",
+  "next_action": ""
+ },
+ {
+  "capability": "secrets",
+  "source": "GEMINI_API_KEY, FIREBASE_PROJECT_ID",
+  "outcome": "not needed",
+  "status": "verified",
+  "next_action": ""
+ },
+ {
+  "capability": "verification",
+  "source": "",
+  "outcome": "",
+  "status": "pending",
+  "next_action": "imported-user first login pending user export"
+ },
+ {
+  "capability": "cutover",
+  "source": "Firebase project",
+  "outcome": "retire after data import",
+  "status": "pending",
+  "next_action": "after records/users imported"
+ }
+]

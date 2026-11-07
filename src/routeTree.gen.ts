@@ -10,33 +10,193 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApplicationsRouteImport } from './routes/applications'
+import { Route as CopilotRouteImport } from './routes/copilot'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DocumentsRouteImport } from './routes/documents'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MatcherRouteImport } from './routes/matcher'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ScholarshipsIndexRouteImport } from './routes/scholarships.index'
+import { Route as ScholarshipsIdRouteImport } from './routes/scholarships.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApplicationsRoute = ApplicationsRouteImport.update({
+  id: '/applications',
+  path: '/applications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CopilotRoute = CopilotRouteImport.update({
+  id: '/copilot',
+  path: '/copilot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentsRoute = DocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatcherRoute = MatcherRouteImport.update({
+  id: '/matcher',
+  path: '/matcher',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScholarshipsIndexRoute = ScholarshipsIndexRouteImport.update({
+  id: '/scholarships/',
+  path: '/scholarships/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScholarshipsIdRoute = ScholarshipsIdRouteImport.update({
+  id: '/scholarships/$id',
+  path: '/scholarships/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/applications': typeof ApplicationsRoute
+  '/copilot': typeof CopilotRoute
+  '/dashboard': typeof DashboardRoute
+  '/documents': typeof DocumentsRoute
+  '/login': typeof LoginRoute
+  '/matcher': typeof MatcherRoute
+  '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
+  '/scholarships/$id': typeof ScholarshipsIdRoute
+  '/scholarships/': typeof ScholarshipsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/applications': typeof ApplicationsRoute
+  '/copilot': typeof CopilotRoute
+  '/dashboard': typeof DashboardRoute
+  '/documents': typeof DocumentsRoute
+  '/login': typeof LoginRoute
+  '/matcher': typeof MatcherRoute
+  '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
+  '/scholarships/$id': typeof ScholarshipsIdRoute
+  '/scholarships': typeof ScholarshipsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/applications': typeof ApplicationsRoute
+  '/copilot': typeof CopilotRoute
+  '/dashboard': typeof DashboardRoute
+  '/documents': typeof DocumentsRoute
+  '/login': typeof LoginRoute
+  '/matcher': typeof MatcherRoute
+  '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
+  '/scholarships/$id': typeof ScholarshipsIdRoute
+  '/scholarships/': typeof ScholarshipsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/applications'
+    | '/copilot'
+    | '/dashboard'
+    | '/documents'
+    | '/login'
+    | '/matcher'
+    | '/onboarding'
+    | '/profile'
+    | '/reset-password'
+    | '/signup'
+    | '/scholarships/$id'
+    | '/scholarships/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/applications'
+    | '/copilot'
+    | '/dashboard'
+    | '/documents'
+    | '/login'
+    | '/matcher'
+    | '/onboarding'
+    | '/profile'
+    | '/reset-password'
+    | '/signup'
+    | '/scholarships/$id'
+    | '/scholarships'
+  id:
+    | '__root__'
+    | '/'
+    | '/applications'
+    | '/copilot'
+    | '/dashboard'
+    | '/documents'
+    | '/login'
+    | '/matcher'
+    | '/onboarding'
+    | '/profile'
+    | '/reset-password'
+    | '/signup'
+    | '/scholarships/$id'
+    | '/scholarships/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApplicationsRoute: typeof ApplicationsRoute
+  CopilotRoute: typeof CopilotRoute
+  DashboardRoute: typeof DashboardRoute
+  DocumentsRoute: typeof DocumentsRoute
+  LoginRoute: typeof LoginRoute
+  MatcherRoute: typeof MatcherRoute
+  OnboardingRoute: typeof OnboardingRoute
+  ProfileRoute: typeof ProfileRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SignupRoute: typeof SignupRoute
+  ScholarshipsIdRoute: typeof ScholarshipsIdRoute
+  ScholarshipsIndexRoute: typeof ScholarshipsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +208,107 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/applications': {
+      id: '/applications'
+      path: '/applications'
+      fullPath: '/applications'
+      preLoaderRoute: typeof ApplicationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/copilot': {
+      id: '/copilot'
+      path: '/copilot'
+      fullPath: '/copilot'
+      preLoaderRoute: typeof CopilotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documents': {
+      id: '/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof DocumentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matcher': {
+      id: '/matcher'
+      path: '/matcher'
+      fullPath: '/matcher'
+      preLoaderRoute: typeof MatcherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scholarships/': {
+      id: '/scholarships/'
+      path: '/scholarships'
+      fullPath: '/scholarships/'
+      preLoaderRoute: typeof ScholarshipsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scholarships/$id': {
+      id: '/scholarships/$id'
+      path: '/scholarships/$id'
+      fullPath: '/scholarships/$id'
+      preLoaderRoute: typeof ScholarshipsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApplicationsRoute: ApplicationsRoute,
+  CopilotRoute: CopilotRoute,
+  DashboardRoute: DashboardRoute,
+  DocumentsRoute: DocumentsRoute,
+  LoginRoute: LoginRoute,
+  MatcherRoute: MatcherRoute,
+  OnboardingRoute: OnboardingRoute,
+  ProfileRoute: ProfileRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SignupRoute: SignupRoute,
+  ScholarshipsIdRoute: ScholarshipsIdRoute,
+  ScholarshipsIndexRoute: ScholarshipsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
