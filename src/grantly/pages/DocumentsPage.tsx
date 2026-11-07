@@ -184,7 +184,7 @@ export const DocumentsPage: React.FC = () => {
           fileSize: file.size,
           uploadDate: new Date().toISOString().split('T')[0],
           uploadedAt: new Date().toISOString(),
-          status: 'pending',
+          status: 'analyzing',
           analysisStatus: 'PENDING',
           readinessScore: 75,
           fileData: base64Data,
