@@ -45,7 +45,10 @@ interface AuthContextType {
   getIdToken: () => Promise<string | null>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Keep one context instance across hot reloads so providers and consumers always match.
+const g = globalThis as any;
+const AuthContext: React.Context<AuthContextType | undefined> =
+  g.__grantlyAuthContext || (g.__grantlyAuthContext = createContext<AuthContextType | undefined>(undefined));
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AppUser | null>(null);
