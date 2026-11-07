@@ -184,7 +184,7 @@ export const DocumentsPage: React.FC = () => {
           fileSize: file.size,
           uploadDate: new Date().toISOString().split('T')[0],
           uploadedAt: new Date().toISOString(),
-          status: 'verified',
+          status: 'pending',
           analysisStatus: 'PENDING',
           readinessScore: 75,
           fileData: base64Data,
@@ -841,6 +841,28 @@ export const DocumentsPage: React.FC = () => {
                     </p>
                   </div>
                 )}
+
+                {/* Plain-language explanation (English + Hindi) and eligibility notes */}
+                {(() => {
+                  const ex: any = (inspectingDoc as any).extractedData || {};
+                  if (!ex.summaryEnglish && !ex.summaryHindi && !(ex.eligibilityNotes || []).length) return null;
+                  return (
+                    <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-300 space-y-2">
+                      <span className="font-bold text-white">What this document says</span>
+                      {ex.summaryEnglish && <p>{ex.summaryEnglish}</p>}
+                      {ex.summaryHindi && <p lang="hi">{ex.summaryHindi}</p>}
+                      {(ex.eligibilityNotes || []).length > 0 && (
+                        <>
+                          <span className="font-bold text-white block pt-1">Scholarship eligibility hints</span>
+                          <ul className="list-disc pl-4 space-y-0.5">
+                            {ex.eligibilityNotes.map((n: string, i: number) => <li key={i}>{n}</li>)}
+                          </ul>
+                        </>
+                      )}
+                      <p className="text-[10px] text-slate-500">AI readiness check only — not an official verification.</p>
+                    </div>
+                  );
+                })()}
 
                 {/* Extracted Information Structured Cards */}
                 <div className="space-y-3">

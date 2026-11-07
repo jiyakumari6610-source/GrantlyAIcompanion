@@ -157,7 +157,11 @@ Respond with ONLY a JSON object with these fields:
 documentType (string), studentName (string|null), institutionName (string|null), academicYear (string|null),
 marksOrPercentage (string|null), issuingAuthority (string|null), issueDate (string|null), expiryDate (string|null),
 relevantDetails (string|null), isLegible (boolean), readabilityNotes (string), confidenceScore (integer 0-100),
-missingMandatoryFields (string[]), detectedInconsistencies (string[]).`;
+missingMandatoryFields (string[]), detectedInconsistencies (string[]),
+summaryEnglish (string: 2-3 simple sentences explaining what this document is and what it shows),
+summaryHindi (string: the same explanation in simple Devanagari Hindi),
+eligibilityNotes (string[]: how these details may relate to common Indian scholarship criteria such as income limits, category, domicile or marks; never claim official verification).
+Student profile for context (may be empty): ${JSON.stringify(profileData ? { fullName: profileData.fullName, category: profileData.category, state: profileData.state, annualIncome: profileData.annualIncome, percentage: profileData.percentage } : {})}`;
 
     const dataUrl = `data:${effectiveMime};base64,${cleanBase64}`;
     const filePart =
@@ -190,6 +194,13 @@ missingMandatoryFields (string[]), detectedInconsistencies (string[]).`;
     } catch (err) {
       console.error('Document analysis AI error:', err instanceof GatewayError ? err.code : err);
       await markFailed('AI analysis error: processing failed');
+      const code = err instanceof GatewayError ? (err as any).code : '';
+      const name = err instanceof Error ? err.name : '';
+      if (/Configuration|Authentication/.test(name) || /config|auth/i.test(String(code))) {
+        throw new Error('AI is not configured for this project right now, so no analysis was produced. Your file is still safely stored.');
+      }
+      if (/PaymentRequired/.test(name)) throw new Error('AI credits are exhausted. Please top up and try again.');
+      if (/RateLimit/.test(name)) throw new Error('AI is busy right now. Please wait a minute and try again.');
       throw new Error('Document analysis failed. The AI could not process the provided file.');
     }
 
@@ -252,6 +263,9 @@ missingMandatoryFields (string[]), detectedInconsistencies (string[]).`;
       readabilityNotes: extracted.readabilityNotes || (isLegible ? 'Document text clearly readable.' : 'Low clarity scan.'),
       confidenceScore,
       confidenceTier,
+      summaryEnglish: typeof extracted.summaryEnglish === 'string' ? extracted.summaryEnglish : null,
+      summaryHindi: typeof extracted.summaryHindi === 'string' ? extracted.summaryHindi : null,
+      eligibilityNotes: Array.isArray(extracted.eligibilityNotes) ? extracted.eligibilityNotes.filter(Boolean).map(String) : [],
     };
 
     const now = new Date().toISOString();
