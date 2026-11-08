@@ -1,28 +1,21 @@
 /**
- * Grantly data + auth service, backed by Lovable Cloud.
- * (Kept under the original module name so migrated pages keep their imports.)
+ * Grantly data + auth service, backed by Supabase.
  */
-import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable/index';
-import type { Json } from '@/integrations/supabase/types';
-import {
-  StudentProfile,
-  ApplicationRecord,
-  UploadedDocument,
-  SuspiciousReport,
-} from '../types';
-import { analyzeDocumentFn } from '../ai/ai.functions';
+import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
+import { StudentProfile, ApplicationRecord, UploadedDocument, SuspiciousReport } from "../types";
+import { analyzeDocumentFn } from "../ai/ai.functions";
 
-export const DOCUMENTS_BUCKET = 'documents';
+export const DOCUMENTS_BUCKET = "documents";
 
-function authError(err: { message?: string; code?: string } | null, fallback = 'auth/unknown') {
-  const e: any = new Error(err?.message || 'Authentication failed');
-  const msg = (err?.message || '').toLowerCase();
-  if (msg.includes('invalid login')) e.code = 'auth/invalid-credential';
-  else if (msg.includes('email not confirmed')) e.code = 'auth/email-not-confirmed';
-  else if (msg.includes('already registered')) e.code = 'auth/email-already-in-use';
-  else if (msg.includes('password')) e.code = 'auth/weak-password';
-  else if (msg.includes('rate limit')) e.code = 'auth/too-many-requests';
+function authError(err: { message?: string; code?: string } | null, fallback = "auth/unknown") {
+  const e: any = new Error(err?.message || "Authentication failed");
+  const msg = (err?.message || "").toLowerCase();
+  if (msg.includes("invalid login")) e.code = "auth/invalid-credential";
+  else if (msg.includes("email not confirmed")) e.code = "auth/email-not-confirmed";
+  else if (msg.includes("already registered")) e.code = "auth/email-already-in-use";
+  else if (msg.includes("password")) e.code = "auth/weak-password";
+  else if (msg.includes("rate limit")) e.code = "auth/too-many-requests";
   else e.code = err?.code || fallback;
   return e;
 }
@@ -33,7 +26,7 @@ async function currentUid(): Promise<string | null> {
 }
 
 export async function testFirestoreConnection(): Promise<boolean> {
-  return typeof navigator === 'undefined' ? true : navigator.onLine;
+  return typeof navigator === "undefined" ? true : navigator.onLine;
 }
 
 // ==========================================
@@ -41,37 +34,52 @@ export async function testFirestoreConnection(): Promise<boolean> {
 // ==========================================
 
 export async function registerWithEmail(email: string, pass: string, fullName: string) {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
   const { data, error } = await supabase.auth.signUp({
     email: email.trim(),
     password: pass,
     options: {
-      emailRedirectTo: `${window.location.origin}/onboarding`,
+      emailRedirectTo: `${origin}/onboarding`,
       data: { full_name: fullName.trim() },
     },
   });
   if (error) throw authError(error);
   // Supabase returns a user with no identities when the email already exists
   if (data.user && data.user.identities && data.user.identities.length === 0) {
-    throw authError({ message: 'User already registered' });
+    throw authError({ message: "User already registered" });
   }
   return { user: data.user, needsConfirmation: !data.session };
 }
 
 export async function loginWithEmail(email: string, pass: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: pass });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.trim(),
+    password: pass,
+  });
   if (error) throw authError(error);
   return data.user;
 }
 
 export async function loginWithGoogle(): Promise<{ redirected: boolean }> {
-  const result = await lovable.auth.signInWithOAuth('google', { redirect_uri: window.location.origin });
-  if (result.error) throw authError({ message: String((result.error as any)?.message || result.error) });
-  return { redirected: Boolean(result.redirected) };
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${origin}/dashboard`,
+    },
+  });
+  if (error) throw authError(error);
+  if (data?.url && typeof window !== "undefined") {
+    window.location.href = data.url;
+    return { redirected: true };
+  }
+  return { redirected: Boolean(data?.url) };
 }
 
 export async function sendPasswordReset(email: string): Promise<void> {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-    redirectTo: `${window.location.origin}/reset-password`,
+    redirectTo: `${origin}/reset-password`,
   });
   if (error) throw authError(error);
 }
@@ -79,7 +87,7 @@ export async function sendPasswordReset(email: string): Promise<void> {
 export async function resendVerification(): Promise<void> {
   const { data } = await supabase.auth.getUser();
   if (data.user?.email) {
-    await supabase.auth.resend({ type: 'signup', email: data.user.email });
+    await supabase.auth.resend({ type: "signup", email: data.user.email });
   }
 }
 
@@ -92,7 +100,11 @@ export async function logoutUser(): Promise<void> {
 // ==========================================
 
 export async function fetchUserProfile(uid: string): Promise<StudentProfile | null> {
-  const { data, error } = await supabase.from('profiles').select('data').eq('id', uid).maybeSingle();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("data")
+    .eq("id", uid)
+    .maybeSingle();
   if (error) throw error;
   return data ? (data.data as unknown as StudentProfile) : null;
 }
@@ -100,7 +112,7 @@ export async function fetchUserProfile(uid: string): Promise<StudentProfile | nu
 export async function persistUserProfile(uid: string, profile: StudentProfile): Promise<void> {
   const clean = { ...profile, id: uid, updatedAt: new Date().toISOString() };
   const { error } = await supabase
-    .from('profiles')
+    .from("profiles")
     .upsert({ id: uid, data: clean as unknown as Json, updated_at: new Date().toISOString() });
   if (error) throw error;
 }
@@ -110,28 +122,40 @@ export async function persistUserProfile(uid: string, profile: StudentProfile): 
 // ==========================================
 
 export async function fetchUserApplications(uid: string): Promise<ApplicationRecord[]> {
-  const { data, error } = await supabase.from('applications').select('data').eq('user_id', uid);
+  const { data, error } = await supabase.from("applications").select("data").eq("user_id", uid);
   if (error) throw error;
   return (data || []).map((r) => r.data as unknown as ApplicationRecord);
 }
 
-export async function persistUserApplication(uid: string, application: ApplicationRecord): Promise<void> {
+export async function persistUserApplication(
+  uid: string,
+  application: ApplicationRecord,
+): Promise<void> {
   const now = new Date().toISOString();
   const { data: existing } = await supabase
-    .from('applications')
-    .select('data')
-    .eq('user_id', uid)
-    .eq('id', application.id)
+    .from("applications")
+    .select("data")
+    .eq("user_id", uid)
+    .eq("id", application.id)
     .maybeSingle();
-  const merged = { ...((existing?.data as object) || {}), ...application, userId: uid, updatedAt: now };
+  const merged = {
+    ...((existing?.data as object) || {}),
+    ...application,
+    userId: uid,
+    updatedAt: now,
+  };
   const { error } = await supabase
-    .from('applications')
+    .from("applications")
     .upsert({ user_id: uid, id: application.id, data: merged as unknown as Json, updated_at: now });
   if (error) throw error;
 }
 
 export async function deleteUserApplication(uid: string, applicationId: string): Promise<void> {
-  const { error } = await supabase.from('applications').delete().eq('user_id', uid).eq('id', applicationId);
+  const { error } = await supabase
+    .from("applications")
+    .delete()
+    .eq("user_id", uid)
+    .eq("id", applicationId);
   if (error) throw error;
 }
 
@@ -140,23 +164,35 @@ export async function deleteUserApplication(uid: string, applicationId: string):
 // ==========================================
 
 export async function fetchUserSavedScholarships(uid: string): Promise<string[]> {
-  const { data, error } = await supabase.from('saved_scholarships').select('scholarship_id').eq('user_id', uid);
+  const { data, error } = await supabase
+    .from("saved_scholarships")
+    .select("scholarship_id")
+    .eq("user_id", uid);
   if (error) throw error;
   return (data || []).map((r) => r.scholarship_id);
 }
 
-export async function toggleUserSavedScholarship(uid: string, scholarshipId: string): Promise<boolean> {
+export async function toggleUserSavedScholarship(
+  uid: string,
+  scholarshipId: string,
+): Promise<boolean> {
   const { data } = await supabase
-    .from('saved_scholarships')
-    .select('scholarship_id')
-    .eq('user_id', uid)
-    .eq('scholarship_id', scholarshipId)
+    .from("saved_scholarships")
+    .select("scholarship_id")
+    .eq("user_id", uid)
+    .eq("scholarship_id", scholarshipId)
     .maybeSingle();
   if (data) {
-    await supabase.from('saved_scholarships').delete().eq('user_id', uid).eq('scholarship_id', scholarshipId);
+    await supabase
+      .from("saved_scholarships")
+      .delete()
+      .eq("user_id", uid)
+      .eq("scholarship_id", scholarshipId);
     return false;
   }
-  const { error } = await supabase.from('saved_scholarships').insert({ user_id: uid, scholarship_id: scholarshipId });
+  const { error } = await supabase
+    .from("saved_scholarships")
+    .insert({ user_id: uid, scholarship_id: scholarshipId });
   if (error) throw error;
   return true;
 }
@@ -167,17 +203,20 @@ export async function toggleUserSavedScholarship(uid: string, scholarshipId: str
 
 export async function fetchUserDocuments(uid: string): Promise<UploadedDocument[]> {
   const { data, error } = await supabase
-    .from('documents')
-    .select('data, storage_path')
-    .eq('user_id', uid)
-    .order('created_at', { ascending: false });
+    .from("documents")
+    .select("data, storage_path")
+    .eq("user_id", uid)
+    .order("created_at", { ascending: false });
   if (error) throw error;
-  return (data || []).map((r) => ({ ...(r.data as unknown as UploadedDocument), storagePath: r.storage_path || undefined }));
+  return (data || []).map((r) => ({
+    ...(r.data as unknown as UploadedDocument),
+    storagePath: r.storage_path || undefined,
+  }));
 }
 
 export async function persistUserDocument(uid: string, docData: UploadedDocument): Promise<void> {
   const clean: UploadedDocument = { ...docData, fileData: undefined };
-  const { error } = await supabase.from('documents').upsert({
+  const { error } = await supabase.from("documents").upsert({
     user_id: uid,
     id: docData.id,
     storage_path: docData.storagePath ?? null,
@@ -193,7 +232,7 @@ export async function uploadDocumentFileToStorage(
   file: File | Blob,
   fileName: string,
 ): Promise<string> {
-  const cleanName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const cleanName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
   const storagePath = `${uid}/${docId}/${cleanName}`;
   const { error } = await supabase.storage.from(DOCUMENTS_BUCKET).upload(storagePath, file, {
     upsert: true,
@@ -215,9 +254,17 @@ export async function deleteDocumentFileFromStorage(storagePath: string): Promis
   await supabase.storage.from(DOCUMENTS_BUCKET).remove([storagePath]);
 }
 
-export async function deleteUserDocument(uid: string, documentId: string, storagePath?: string): Promise<void> {
+export async function deleteUserDocument(
+  uid: string,
+  documentId: string,
+  storagePath?: string,
+): Promise<void> {
   if (storagePath) await deleteDocumentFileFromStorage(storagePath);
-  const { error } = await supabase.from('documents').delete().eq('user_id', uid).eq('id', documentId);
+  const { error } = await supabase
+    .from("documents")
+    .delete()
+    .eq("user_id", uid)
+    .eq("id", documentId);
   if (error) throw error;
 }
 
@@ -249,7 +296,7 @@ export async function analyzeDocumentWithGemini(
 
 export async function createTrustGuardReport(report: SuspiciousReport): Promise<void> {
   const uid = await currentUid();
-  const { error } = await supabase.from('reports').insert({
+  const { error } = await supabase.from("reports").insert({
     id: report.id,
     scholarship_id: report.scholarshipId,
     reason: report.reason,

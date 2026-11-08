@@ -1,4 +1,4 @@
-import { StudentProfile, MatchResult } from '../types';
+import { StudentProfile, MatchResult } from "../types";
 
 export interface FundingAnalysis {
   educationCost: number;
@@ -13,7 +13,7 @@ export interface FundingAnalysis {
 
 export function computeFundingGap(
   student: StudentProfile,
-  matches: MatchResult[]
+  matches: MatchResult[],
 ): FundingAnalysis {
   const educationCost = student.estimatedAnnualEducationCost || 180000;
   const confirmedFunding = student.confirmedFunding || 0;
@@ -22,10 +22,10 @@ export function computeFundingGap(
   const netFundingRequirement = Math.max(0, educationCost - confirmedFunding);
 
   // Filter scholarships where student is strictly 'Eligible'
-  const eligibleMatches = matches.filter(m => m.status === 'Eligible' && !m.mandatoryFailed);
+  const eligibleMatches = matches.filter((m) => m.status === "Eligible" && !m.mandatoryFailed);
   const potentialScholarshipFunding = eligibleMatches.reduce(
     (sum, m) => sum + (m.scholarship.awardAmount || 0),
-    0
+    0,
   );
 
   // Take the realistic top 2 scholarships (since students typically win 1-2 overlapping awards)

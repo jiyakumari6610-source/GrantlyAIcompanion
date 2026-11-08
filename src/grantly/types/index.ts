@@ -1,11 +1,11 @@
 export type EducationLevel =
-  | 'Undergraduate'
-  | 'Postgraduate'
-  | 'Class 12 / Higher Secondary'
-  | 'Diploma / Polytechnic'
-  | 'Doctoral / PhD';
+  | "Undergraduate"
+  | "Postgraduate"
+  | "Class 12 / Higher Secondary"
+  | "Diploma / Polytechnic"
+  | "Doctoral / PhD";
 
-export type CategoryType = 'General' | 'OBC' | 'SC' | 'ST' | 'EWS';
+export type CategoryType = "General" | "OBC" | "SC" | "ST" | "EWS";
 
 export interface StudentProfile {
   id: string;
@@ -14,7 +14,7 @@ export interface StudentProfile {
   state: string;
   city: string;
   dob: string;
-  gender: 'Male' | 'Female' | 'Non-binary' | 'Prefer not to say';
+  gender: "Male" | "Female" | "Non-binary" | "Prefer not to say";
   educationLevel: EducationLevel;
   course: string;
   college: string;
@@ -31,15 +31,16 @@ export interface StudentProfile {
   onboardingCompleted: boolean;
 }
 
-export type ProviderType = 'Government' | 'Corporate CSR' | 'Non-Profit / NGO' | 'University' | 'Flagged Suspicious';
+export type ProviderType =
+  "Government" | "Corporate CSR" | "Non-Profit / NGO" | "University" | "Flagged Suspicious";
 
 export type VerificationStatus =
-  | 'VERIFIED'
-  | 'PENDING_VERIFICATION'
-  | 'EXPIRED_OR_CLOSED'
-  | 'Official Verified'
-  | 'Provisional Review'
-  | 'Flagged Suspicious';
+  | "VERIFIED"
+  | "PENDING_VERIFICATION"
+  | "EXPIRED_OR_CLOSED"
+  | "Official Verified"
+  | "Provisional Review"
+  | "Flagged Suspicious";
 
 export interface Scholarship {
   id: string;
@@ -53,9 +54,9 @@ export interface Scholarship {
   minMarks: number;
   maxIncome: number;
   categories: string[];
-  genderCriteria: 'All' | 'Female' | 'Male';
+  genderCriteria: "All" | "Female" | "Male";
   awardAmount: number;
-  awardFrequency: 'Annual' | 'One-Time' | 'Per Semester' | 'Tuition Waiver';
+  awardFrequency: "Annual" | "One-Time" | "Per Semester" | "Tuition Waiver";
   currency?: string;
   requiredDocuments: string[];
   deadline: string;
@@ -77,13 +78,7 @@ export interface Scholarship {
 }
 
 export type ApplicationStatus =
-  | 'Saved'
-  | 'Preparing'
-  | 'Ready to Apply'
-  | 'Applied'
-  | 'Under Review'
-  | 'Approved'
-  | 'Rejected';
+  "Saved" | "Preparing" | "Ready to Apply" | "Applied" | "Under Review" | "Approved" | "Rejected";
 
 export interface ApplicationRecord {
   id: string;
@@ -96,21 +91,21 @@ export interface ApplicationRecord {
 }
 
 export type DocumentCategory =
-  | 'Aadhaar card'
-  | 'Income certificate'
-  | 'Caste certificate'
-  | 'Domicile certificate'
-  | 'Marksheet'
-  | 'Bonafide certificate'
-  | 'College ID'
-  | 'Other supporting documents'
-  | 'Income Certificate'
-  | 'Caste Certificate'
-  | 'Bonafide Certificate'
-  | 'Identity Proof'
-  | 'Other';
+  | "Aadhaar card"
+  | "Income certificate"
+  | "Caste certificate"
+  | "Domicile certificate"
+  | "Marksheet"
+  | "Bonafide certificate"
+  | "College ID"
+  | "Other supporting documents"
+  | "Income Certificate"
+  | "Caste Certificate"
+  | "Bonafide Certificate"
+  | "Identity Proof"
+  | "Other";
 
-export * from './document';
+export * from "./document";
 
 export interface UploadedDocument {
   id: string;
@@ -119,7 +114,7 @@ export interface UploadedDocument {
   fileType: string;
   fileSize: number;
   uploadDate: string;
-  status: 'verified' | 'analyzing' | 'needs-review';
+  status: "verified" | "analyzing" | "needs-review";
   readinessScore: number;
   fileData?: string;
   // Phase 3F Rich Attributes
@@ -129,7 +124,7 @@ export interface UploadedDocument {
   documentType?: string;
   storagePath?: string;
   mimeType?: string;
-  analysisStatus?: 'PENDING' | 'ANALYZED' | 'NEEDS_REVIEW' | 'UNREADABLE' | 'ANALYSIS_FAILED';
+  analysisStatus?: "PENDING" | "ANALYZED" | "NEEDS_REVIEW" | "UNREADABLE" | "ANALYSIS_FAILED";
   extractedData?: {
     documentType: string;
     studentName: string | null;
@@ -143,7 +138,7 @@ export interface UploadedDocument {
     isLegible: boolean;
     readabilityNotes: string | null;
     confidenceScore: number;
-    confidenceTier?: 'HIGH' | 'MEDIUM' | 'LOW';
+    confidenceTier?: "HIGH" | "MEDIUM" | "LOW";
   };
   missingInformation?: string[];
   inconsistencies?: string[];
@@ -179,8 +174,8 @@ export interface MatchBreakdown {
 export interface MatchResult {
   scholarship: Scholarship;
   score: number;
-  status: 'Eligible' | 'Borderline' | 'Ineligible';
-  eligibilityStatus?: 'ELIGIBLE' | 'INELIGIBLE' | 'NEEDS_REVIEW';
+  status: "Eligible" | "Borderline" | "Ineligible";
+  eligibilityStatus?: "ELIGIBLE" | "INELIGIBLE" | "NEEDS_REVIEW";
   breakdown: MatchBreakdown;
   explanations: string[];
   missingCriteria: string[];
@@ -192,7 +187,7 @@ export interface MatchResult {
 
 export interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   text: string;
   timestamp: string;
   suggestions?: string[];

@@ -3,11 +3,12 @@
  * Phase 3E Specification
  */
 
-export type EligibilityStatus = 'ELIGIBLE' | 'INELIGIBLE' | 'NEEDS_REVIEW';
+export type EligibilityStatus = "ELIGIBLE" | "INELIGIBLE" | "NEEDS_REVIEW";
 
 export interface CriterionResult {
   name: string;
-  category: 'VERIFICATION' | 'DEADLINE' | 'ACADEMIC' | 'INCOME' | 'EDUCATION_LEVEL' | 'COURSE' | 'STATE';
+  category:
+    "VERIFICATION" | "DEADLINE" | "ACADEMIC" | "INCOME" | "EDUCATION_LEVEL" | "COURSE" | "STATE";
   passed: boolean;
   isMissing: boolean;
   requiredValue?: string | number | string[];
@@ -16,12 +17,12 @@ export interface CriterionResult {
 }
 
 export interface MatchScoreBreakdown {
-  academic: number;       // max 25
-  income: number;         // max 25
-  course: number;         // max 20
-  location: number;       // max 15
+  academic: number; // max 25
+  income: number; // max 25
+  course: number; // max 20
+  location: number; // max 15
   educationLevel: number; // max 15
-  total: number;          // max 100
+  total: number; // max 100
 }
 
 export interface EligibilityEvaluation {

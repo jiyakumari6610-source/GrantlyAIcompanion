@@ -1,11 +1,14 @@
-import { Scholarship, StudentProfile, MatchResult, MatchBreakdown } from '../types';
-import { evaluateScholarshipEligibility } from '../services/eligibilityEngine';
+import { Scholarship, StudentProfile, MatchResult, MatchBreakdown } from "../types";
+import { evaluateScholarshipEligibility } from "../services/eligibilityEngine";
 
 /**
  * Grantly Scholarship Eligibility Deterministic Matching Engine
  * Backed by Phase 3E deterministic evaluation architecture
  */
-export function calculateMatchScore(student: StudentProfile, scholarship: Scholarship): MatchResult {
+export function calculateMatchScore(
+  student: StudentProfile,
+  scholarship: Scholarship,
+): MatchResult {
   const evaluation = evaluateScholarshipEligibility(student, scholarship);
 
   const breakdown: MatchBreakdown = {
@@ -16,12 +19,12 @@ export function calculateMatchScore(student: StudentProfile, scholarship: Schola
     category: evaluation.breakdown?.educationLevel ?? 0,
   };
 
-  const status: 'Eligible' | 'Borderline' | 'Ineligible' =
-    evaluation.eligibilityStatus === 'ELIGIBLE'
-      ? 'Eligible'
-      : evaluation.eligibilityStatus === 'NEEDS_REVIEW'
-      ? 'Borderline'
-      : 'Ineligible';
+  const status: "Eligible" | "Borderline" | "Ineligible" =
+    evaluation.eligibilityStatus === "ELIGIBLE"
+      ? "Eligible"
+      : evaluation.eligibilityStatus === "NEEDS_REVIEW"
+        ? "Borderline"
+        : "Ineligible";
 
   return {
     scholarship,
@@ -33,7 +36,7 @@ export function calculateMatchScore(student: StudentProfile, scholarship: Schola
     missingCriteria: evaluation.missingInformation,
     failedCriteria: evaluation.failedCriteria,
     missingInformation: evaluation.missingInformation,
-    mandatoryFailed: evaluation.eligibilityStatus === 'INELIGIBLE',
+    mandatoryFailed: evaluation.eligibilityStatus === "INELIGIBLE",
     mandatoryFailureReason: evaluation.failedCriteria[0],
   };
 }
@@ -43,15 +46,15 @@ export function calculateMatchScore(student: StudentProfile, scholarship: Schola
  */
 export function rankScholarshipsForStudent(
   student: StudentProfile,
-  scholarships: Scholarship[]
+  scholarships: Scholarship[],
 ): MatchResult[] {
   return scholarships
     .map((s) => calculateMatchScore(student, s))
     .sort((a, b) => {
       // 1. Sort priority: ELIGIBLE first, then NEEDS_REVIEW, then INELIGIBLE
       const rankVal = (item: MatchResult) => {
-        if (item.eligibilityStatus === 'ELIGIBLE' || item.status === 'Eligible') return 3;
-        if (item.eligibilityStatus === 'NEEDS_REVIEW' || item.status === 'Borderline') return 2;
+        if (item.eligibilityStatus === "ELIGIBLE" || item.status === "Eligible") return 3;
+        if (item.eligibilityStatus === "NEEDS_REVIEW" || item.status === "Borderline") return 2;
         return 1;
       };
       const diff = rankVal(b) - rankVal(a);

@@ -1,15 +1,15 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import type { User as CloudUser } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import type { User as CloudUser } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 import {
   fetchUserProfile,
   persistUserProfile,
   logoutUser,
   resendVerification,
   testFirestoreConnection,
-} from '../services/firebase';
-import { StudentProfile } from '../types';
-import { BLANK_STUDENT_PROFILE } from '../services/storageService';
+} from "../services/firebase";
+import { StudentProfile } from "../types";
+import { BLANK_STUDENT_PROFILE } from "../services/storageService";
 
 /** Account shape the migrated pages expect (mirrors the fields they used). */
 export interface AppUser {
@@ -27,7 +27,7 @@ function toAppUser(u: CloudUser): AppUser {
     email: u.email ?? null,
     displayName: meta.full_name || meta.name || null,
     emailVerified: Boolean(u.email_confirmed_at),
-    getIdToken: async () => (await supabase.auth.getSession()).data.session?.access_token || '',
+    getIdToken: async () => (await supabase.auth.getSession()).data.session?.access_token || "",
   };
 }
 
@@ -48,7 +48,8 @@ interface AuthContextType {
 // Keep one context instance across hot reloads so providers and consumers always match.
 const g = globalThis as any;
 const AuthContext: React.Context<AuthContextType | undefined> =
-  g.__grantlyAuthContext || (g.__grantlyAuthContext = createContext<AuthContextType | undefined>(undefined));
+  g.__grantlyAuthContext ||
+  (g.__grantlyAuthContext = createContext<AuthContextType | undefined>(undefined));
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AppUser | null>(null);
@@ -64,23 +65,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         userProfile = {
           ...BLANK_STUDENT_PROFILE,
           id: appUser.uid,
-          fullName: appUser.displayName || '',
-          email: appUser.email || '',
+          fullName: appUser.displayName || "",
+          email: appUser.email || "",
           onboardingCompleted: false,
         };
         await persistUserProfile(appUser.uid, userProfile);
       }
       setProfile(userProfile);
     } catch (err) {
-      console.error('Failed to load user profile:', err);
+      console.error("Failed to load user profile:", err);
       setProfile({
         ...BLANK_STUDENT_PROFILE,
         id: appUser.uid,
-        fullName: appUser.displayName || '',
-        email: appUser.email || '',
+        fullName: appUser.displayName || "",
+        email: appUser.email || "",
       });
     }
-    const { data: admin } = await supabase.rpc('has_role', { _user_id: appUser.uid, _role: 'admin' });
+    const { data: admin } = await supabase.rpc("has_role", {
+      _user_id: appUser.uid,
+      _role: "admin",
+    });
     setIsAdmin(Boolean(admin));
   };
 
@@ -110,7 +114,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     };
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => handle(session?.user ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) =>
+      handle(session?.user ?? null),
+    );
     supabase.auth.getSession().then(({ data }) => handle(data.session?.user ?? null));
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -121,7 +127,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const updateProfileData = async (updates: Partial<StudentProfile>) => {
     if (!user || !profile) return;
-    const merged: StudentProfile = { ...profile, ...updates, id: user.uid, email: user.email || profile.email };
+    const merged: StudentProfile = {
+      ...profile,
+      ...updates,
+      id: user.uid,
+      email: user.email || profile.email,
+    };
     setProfile(merged);
     await persistUserProfile(user.uid, merged);
   };
@@ -155,6 +166,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }

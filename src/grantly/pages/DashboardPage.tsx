@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link } from '@/lib/router-compat';
-import { motion } from 'motion/react';
+import React, { useState } from "react";
+import { Link } from "@/lib/router-compat";
+import { motion } from "motion/react";
 import {
   Sparkles,
   ArrowRight,
@@ -19,7 +19,7 @@ import {
   Cpu,
   UserPlus,
   Dna,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   getStudentProfile,
   getApplications,
@@ -28,18 +28,18 @@ import {
   toggleSaveScholarship,
   calculateDocumentReadiness,
   isProfileCompleted,
-} from '../services/storageService';
-import { DEMO_SCHOLARSHIPS } from '../data/scholarships';
-import { rankScholarshipsForStudent } from '../utils/matchingEngine';
-import { computeFundingGap } from '../utils/fundingCalculator';
-import { MatchScoreIndicator } from '../components/MatchScoreIndicator';
-import { FundingGapChart } from '../components/FundingGapChart';
-import { TrustGuardModal } from '../components/TrustGuardModal';
-import { AiMatchScanModal } from '../components/AiMatchScanModal';
-import { ScholarshipCard } from '../components/ScholarshipCard';
-import { AnimatedCounter } from '../components/AnimatedCounter';
-import { Scholarship, ApplicationRecord, UploadedDocument } from '../types';
-import { useAuth } from '../context/AuthContext';
+} from "../services/storageService";
+import { DEMO_SCHOLARSHIPS } from "../data/scholarships";
+import { rankScholarshipsForStudent } from "../utils/matchingEngine";
+import { computeFundingGap } from "../utils/fundingCalculator";
+import { MatchScoreIndicator } from "../components/MatchScoreIndicator";
+import { FundingGapChart } from "../components/FundingGapChart";
+import { TrustGuardModal } from "../components/TrustGuardModal";
+import { AiMatchScanModal } from "../components/AiMatchScanModal";
+import { ScholarshipCard } from "../components/ScholarshipCard";
+import { AnimatedCounter } from "../components/AnimatedCounter";
+import { Scholarship, ApplicationRecord, UploadedDocument } from "../types";
+import { useAuth } from "../context/AuthContext";
 import {
   readApplicationHistory,
   readDocumentMetadataList,
@@ -47,8 +47,8 @@ import {
   saveScholarshipForUser,
   removeSavedScholarshipForUser,
   fetchScholarships,
-} from '../services/firestoreService';
-import { scholarshipDocumentToModel } from '../types/firestore';
+} from "../services/firestoreService";
+import { scholarshipDocumentToModel } from "../types/firestore";
 
 export const DashboardPage: React.FC = () => {
   const { user, profile: authProfile } = useAuth();
@@ -59,7 +59,9 @@ export const DashboardPage: React.FC = () => {
   const [dbError, setDbError] = useState<string | null>(null);
   const hasProfile = isProfileCompleted(profile);
 
-  const [scholarshipsList, setScholarshipsList] = useState<Scholarship[]>([]);
+  const [scholarshipsList, setScholarshipsList] = useState<Scholarship[]>(() =>
+    DEMO_SCHOLARSHIPS.filter((s) => s.verificationStatus === "VERIFIED"),
+  );
 
   // Sync live Firestore records as primary source of truth
   React.useEffect(() => {
@@ -69,14 +71,14 @@ export const DashboardPage: React.FC = () => {
         if (docs && docs.length > 0) {
           const models = docs.map(scholarshipDocumentToModel);
           // Strictly only include VERIFIED scholarships in verified recommendations
-          setScholarshipsList(models.filter((s) => s.verificationStatus === 'VERIFIED'));
+          setScholarshipsList(models.filter((s) => s.verificationStatus === "VERIFIED"));
         } else {
-          setScholarshipsList([]);
+          setScholarshipsList(DEMO_SCHOLARSHIPS.filter((s) => s.verificationStatus === "VERIFIED"));
         }
       })
       .catch((err) => {
-        console.warn('[Dashboard Scholarships Fetch Warning]', err);
-        setScholarshipsList([]);
+        console.warn("[Dashboard Scholarships Fetch Warning]", err);
+        setScholarshipsList(DEMO_SCHOLARSHIPS.filter((s) => s.verificationStatus === "VERIFIED"));
       });
 
     if (user) {
@@ -91,8 +93,8 @@ export const DashboardPage: React.FC = () => {
           if (remoteSavedIds) setSavedSet(new Set(remoteSavedIds));
         })
         .catch((err) => {
-          console.warn('[Dashboard Firestore Sync]', err);
-          setDbError('Notice: Live cloud records could not be synchronized.');
+          console.warn("[Dashboard Firestore Sync]", err);
+          setDbError("Notice: Live cloud records could not be synchronized.");
         });
     }
   }, [user]);
@@ -100,16 +102,13 @@ export const DashboardPage: React.FC = () => {
   // Run Eligibility DNA Matcher strictly on verified schemes
   const matchResults = rankScholarshipsForStudent(profile, scholarshipsList);
   const eligibleMatches = hasProfile
-    ? matchResults.filter((m) => m.status === 'Eligible' && !m.mandatoryFailed)
+    ? matchResults.filter((m) => m.status === "Eligible" && !m.mandatoryFailed)
     : [];
   const funding = computeFundingGap(profile, matchResults);
   const readiness = calculateDocumentReadiness(docs);
 
   // Calculate catalog-wide metrics dynamically from actual scholarship records
-  const totalCatalogFunding = scholarshipsList.reduce(
-    (sum, s) => sum + s.awardAmount,
-    0
-  );
+  const totalCatalogFunding = scholarshipsList.reduce((sum, s) => sum + s.awardAmount, 0);
 
   // Modals state
   const [activeTrustGuardModal, setActiveTrustGuardModal] = useState<Scholarship | null>(null);
@@ -135,11 +134,11 @@ export const DashboardPage: React.FC = () => {
   };
 
   const applicationsInProgress = applications.filter(
-    (a) => a.status !== 'Approved' && a.status !== 'Rejected'
+    (a) => a.status !== "Approved" && a.status !== "Rejected",
   );
 
   const upcomingDeadlines = matchResults
-    .filter((m) => m.scholarship.daysLeft <= 40 && m.status !== 'Ineligible')
+    .filter((m) => m.scholarship.daysLeft <= 40 && m.status !== "Ineligible")
     .sort((a, b) => a.scholarship.daysLeft - b.scholarship.daysLeft)
     .slice(0, 3);
 
@@ -180,9 +179,14 @@ export const DashboardPage: React.FC = () => {
                 Welcome back, {profile.fullName}
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-                Enrolled in <span className="text-[#42D9F5] font-semibold">{profile.course}</span> (Year {profile.academicYear}) at{' '}
-                <span className="text-white font-medium">{profile.college}</span>, {profile.state}. Your current profile qualifies you for{' '}
-                <strong className="text-[#27C995]">{eligibleMatches.length} pre-screened scholarship opportunities</strong>.
+                Enrolled in <span className="text-[#42D9F5] font-semibold">{profile.course}</span>{" "}
+                (Year {profile.academicYear}) at{" "}
+                <span className="text-white font-medium">{profile.college}</span>, {profile.state}.
+                Your current profile qualifies you for{" "}
+                <strong className="text-[#27C995]">
+                  {eligibleMatches.length} pre-screened scholarship opportunities
+                </strong>
+                .
               </p>
             </div>
 
@@ -223,7 +227,9 @@ export const DashboardPage: React.FC = () => {
                 Your Future Deserves Funding.
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-                Complete your student profile to calibrate your personalized Eligibility DNA, evaluate minimum cut-offs, audit certificates, and discover verified government and corporate funding without double-counting.
+                Complete your student profile to calibrate your personalized Eligibility DNA,
+                evaluate minimum cut-offs, audit certificates, and discover verified government and
+                corporate funding without double-counting.
               </p>
             </div>
 
@@ -258,7 +264,7 @@ export const DashboardPage: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-slate-400">
-              {hasProfile ? 'Scholarships Matched' : 'Catalog Opportunities'}
+              {hasProfile ? "Scholarships Matched" : "Catalog Opportunities"}
             </span>
             <div className="p-2 rounded-xl bg-[#8065FF]/20 text-[#8065FF]">
               <Compass className="w-4 h-4" />
@@ -266,15 +272,17 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl sm:text-3xl font-bold font-heading text-white">
-              <AnimatedCounter value={hasProfile ? eligibleMatches.length : DEMO_SCHOLARSHIPS.length} />
+              <AnimatedCounter
+                value={hasProfile ? eligibleMatches.length : DEMO_SCHOLARSHIPS.length}
+              />
             </span>
             <span className="text-[11px] font-semibold text-[#27C995] bg-[#27C995]/10 px-1.5 py-0.5 rounded">
-              {hasProfile ? 'High Fit' : 'Available'}
+              {hasProfile ? "High Fit" : "Available"}
             </span>
           </div>
           <p className="text-[10px] text-slate-400 mt-2">
             {hasProfile
-              ? 'Surpassing 75% weighted eligibility threshold.'
+              ? "Surpassing 75% weighted eligibility threshold."
               : `${DEMO_SCHOLARSHIPS.length} verified schemes currently cataloged.`}
           </p>
         </motion.div>
@@ -288,7 +296,7 @@ export const DashboardPage: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-slate-400">
-              {hasProfile ? 'Potential Funding' : 'Total Funding Pool'}
+              {hasProfile ? "Potential Funding" : "Total Funding Pool"}
             </span>
             <div className="p-2 rounded-xl bg-[#42D9F5]/20 text-[#42D9F5]">
               <IndianRupee className="w-4 h-4" />
@@ -303,13 +311,13 @@ export const DashboardPage: React.FC = () => {
               />
             </span>
             <span className="text-[10px] text-violet-300 font-mono">
-              {hasProfile ? 'Max Pool' : 'Indexed'}
+              {hasProfile ? "Max Pool" : "Indexed"}
             </span>
           </div>
           <p className="text-[10px] text-slate-400 mt-2">
             {hasProfile
               ? `Combined sum across all ${eligibleMatches.length} matched grants.`
-              : 'Cumulative award pool across all verified scholarship schemes.'}
+              : "Cumulative award pool across all verified scholarship schemes."}
           </p>
         </motion.div>
 
@@ -331,13 +339,13 @@ export const DashboardPage: React.FC = () => {
               <AnimatedCounter value={applicationsInProgress.length} />
             </span>
             <span className="text-[10px] text-amber-400 font-semibold">
-              {applicationsInProgress.length > 0 ? 'In Progress' : 'Empty'}
+              {applicationsInProgress.length > 0 ? "In Progress" : "Empty"}
             </span>
           </div>
           <p className="text-[10px] text-slate-400 mt-2">
             {applicationsInProgress.length > 0
-              ? 'Applications actively preparing or submitted.'
-              : 'Save opportunities to track application milestones.'}
+              ? "Applications actively preparing or submitted."
+              : "Save opportunities to track application milestones."}
           </p>
         </motion.div>
 
@@ -364,10 +372,10 @@ export const DashboardPage: React.FC = () => {
           </div>
           <p className="text-[10px] text-slate-400 mt-2">
             {docs.length === 0
-              ? 'No certificates uploaded yet.'
+              ? "No certificates uploaded yet."
               : readiness.missingCategories.length > 0
-              ? `Missing: ${readiness.missingCategories[0]}`
-              : 'All core certificates verified!'}
+                ? `Missing: ${readiness.missingCategories[0]}`
+                : "All core certificates verified!"}
           </p>
         </motion.div>
       </div>
@@ -381,12 +389,12 @@ export const DashboardPage: React.FC = () => {
               <div>
                 <h2 className="font-heading text-lg font-bold text-white flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-[#8065FF]" />
-                  {hasProfile ? 'Top Recommended Opportunities' : 'Featured Verified Opportunities'}
+                  {hasProfile ? "Top Recommended Opportunities" : "Featured Verified Opportunities"}
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
                   {hasProfile
                     ? `Algorithmically ranked for your ${profile.percentage}% score and income bracket`
-                    : 'Curated accredited schemes from government portals and trusted philanthropic foundations'}
+                    : "Curated accredited schemes from government portals and trusted philanthropic foundations"}
                 </p>
               </div>
               <Link
@@ -434,7 +442,8 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed mb-4">
-              Ask questions in <strong>Hindi or English</strong> about application circulars, document renewals, or interview preparation.
+              Ask questions in <strong>Hindi or English</strong> about application circulars,
+              document renewals, or interview preparation.
             </p>
 
             <div className="space-y-1.5 mb-4">
@@ -485,8 +494,8 @@ export const DashboardPage: React.FC = () => {
                     <span
                       className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                         match.scholarship.daysLeft <= 15
-                          ? 'bg-rose-500/20 text-rose-400 animate-pulse'
-                          : 'bg-amber-500/20 text-amber-400'
+                          ? "bg-rose-500/20 text-rose-400 animate-pulse"
+                          : "bg-amber-500/20 text-amber-400"
                       }`}
                     >
                       {match.scholarship.daysLeft} days left
@@ -496,7 +505,7 @@ export const DashboardPage: React.FC = () => {
                     {match.scholarship.name}
                   </h4>
                   <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
-                    <span>Award: ₹{match.scholarship.awardAmount.toLocaleString('en-IN')}</span>
+                    <span>Award: ₹{match.scholarship.awardAmount.toLocaleString("en-IN")}</span>
                     <span className="text-[#27C995] font-semibold">{match.score}% Match</span>
                   </div>
                 </Link>
@@ -553,10 +562,7 @@ export const DashboardPage: React.FC = () => {
       )}
 
       {/* Signature AI Match Scan Modal */}
-      <AiMatchScanModal
-        isOpen={scanModalOpen}
-        onClose={() => setScanModalOpen(false)}
-      />
+      <AiMatchScanModal isOpen={scanModalOpen} onClose={() => setScanModalOpen(false)} />
     </div>
   );
 };

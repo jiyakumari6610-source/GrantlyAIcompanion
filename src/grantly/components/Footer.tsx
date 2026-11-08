@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link } from '@/lib/router-compat';
-import { GraduationCap, ShieldCheck, Heart, Sparkles } from 'lucide-react';
+import React from "react";
+import { Link } from "@/lib/router-compat";
+import { GraduationCap, ShieldCheck, Heart, Sparkles } from "lucide-react";
 
 export const Footer: React.FC = () => {
   return (
@@ -19,7 +19,8 @@ export const Footer: React.FC = () => {
             </span>
           </Link>
           <p className="text-xs text-slate-400 leading-relaxed">
-            Unified intelligent platform helping ambitious students discover scholarships, analyze documents, and secure their future education.
+            Unified intelligent platform helping ambitious students discover scholarships, analyze
+            documents, and secure their future education.
           </p>
           <div className="flex items-center gap-1.5 text-xs text-[#27C995]">
             <ShieldCheck className="w-4 h-4" />
@@ -84,11 +85,10 @@ export const Footer: React.FC = () => {
             Security & Trust
           </h4>
           <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-[11px] leading-relaxed text-slate-400">
-            Grantly AI indexes fee-free accredited scholarships. Student data is processed securely with local device encryption and zero unauthorized tracking.
+            Grantly AI indexes fee-free accredited scholarships. Student data is processed securely
+            with local device encryption and zero unauthorized tracking.
           </div>
-          <p className="text-[10px] text-slate-500">
-            GRANTLY AI • Your Future Deserves Funding.
-          </p>
+          <p className="text-[10px] text-slate-500">GRANTLY AI • Your Future Deserves Funding.</p>
         </div>
       </div>
 
@@ -97,7 +97,8 @@ export const Footer: React.FC = () => {
           © 2026 Grantly AI. Tagline: "Your Future Deserves Funding."
         </p>
         <p className="flex items-center gap-1 text-slate-400">
-          Built with <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> for ambitious learners worldwide.
+          Built with <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> for ambitious
+          learners worldwide.
         </p>
       </div>
     </footer>

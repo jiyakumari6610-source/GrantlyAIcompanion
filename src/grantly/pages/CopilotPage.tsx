@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from '@/lib/router-compat';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "@/lib/router-compat";
+import { motion, AnimatePresence } from "motion/react";
 import {
   Bot,
   Send,
@@ -12,75 +12,85 @@ import {
   HelpCircle,
   ArrowRight,
   BookOpen,
-} from 'lucide-react';
-import { getStudentProfile } from '../services/storageService';
-import { copilotChatFn } from '../ai/ai.functions';
-import { ChatMessage } from '../types';
-import { useAuth } from '../context/AuthContext';
+} from "lucide-react";
+import { getStudentProfile } from "../services/storageService";
+import { copilotChatFn } from "../ai/ai.functions";
+import { ChatMessage } from "../types";
+import { useAuth } from "../context/AuthContext";
 
 export const CopilotPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { user, profile: authProfile } = useAuth();
   const profile = authProfile || getStudentProfile();
 
-  const studentName = profile.fullName ? profile.fullName.trim() : 'there';
+  const studentName = profile.fullName ? profile.fullName.trim() : "there";
   const initials = profile.fullName
     ? profile.fullName
-        .split(' ')
+        .split(" ")
         .filter(Boolean)
         .slice(0, 2)
         .map((n) => n[0].toUpperCase())
-        .join('')
-    : 'ME';
+        .join("")
+    : "ME";
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
-      id: 'init-01',
-      role: 'assistant',
+      id: "init-01",
+      role: "assistant",
       text: `Hello ${studentName}! I am **Grantly Copilot**, your scholarship discovery and eligibility advisor.
       
 I can help you:
 - Decode complex government circulars and eligibility formulas.
-- Suggest grants tailored to your **${profile.course || 'academic'}** background${profile.percentage ? ` and **${profile.percentage}%** aggregate` : ''}.
+- Suggest grants tailored to your **${profile.course || "academic"}** background${profile.percentage ? ` and **${profile.percentage}%** aggregate` : ""}.
 - Audit missing certificates and upcoming deadlines.
 - Answer questions in both **English and Hindi (हिंदी)**!
 
 What would you like to explore today?`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       suggestions: [
-        'Which scholarships am I eligible for?',
-        'Explain this scholarship in simple Hindi.',
-        'What documents am I missing?',
-        'How can I improve my scholarship readiness?',
+        "Which scholarships am I eligible for?",
+        "Explain this scholarship in simple Hindi.",
+        "What documents am I missing?",
+        "How can I improve my scholarship readiness?",
       ],
-      source: 'gemini-3.8-flash',
+      source: "gemini-3.8-flash",
     },
   ]);
 
   // Preserve chat history per user in this browser
-  const historyKey = `grantly-copilot-${user?.uid || 'guest'}`;
+  const historyKey = `grantly-copilot-${user?.uid || "guest"}`;
   const restoredRef = useRef(false);
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(historyKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length) setMessages(parsed);
+    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+      try {
+        const saved = localStorage.getItem(historyKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length) setMessages(parsed);
+        }
+      } catch {
+        // Ignore corrupted or missing localStorage data
       }
-    } catch {}
+    }
     restoredRef.current = true;
   }, [historyKey]);
   useEffect(() => {
     if (!restoredRef.current) return;
-    try { localStorage.setItem(historyKey, JSON.stringify(messages.slice(-50))); } catch {}
+    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+      try {
+        localStorage.setItem(historyKey, JSON.stringify(messages.slice(-50)));
+      } catch {
+        // Ignore quota exceeded or storage disabled
+      }
+    }
   }, [messages, historyKey]);
 
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -88,7 +98,7 @@ What would you like to explore today?`,
   }, [messages, loading]);
 
   useEffect(() => {
-    const q = searchParams.get('q');
+    const q = searchParams.get("q");
     if (q) {
       handleSendMessage(q);
     }
@@ -99,13 +109,13 @@ What would you like to explore today?`,
 
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
-      role: 'user',
+      role: "user",
       text: textToSend,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
 
     setMessages((prev) => [...prev, userMsg]);
-    setInput('');
+    setInput("");
     setLoading(true);
 
     try {
@@ -119,26 +129,26 @@ What would you like to explore today?`,
 
       const assistantMsg: ChatMessage = {
         id: `asst-${Date.now()}`,
-        role: 'assistant',
+        role: "assistant",
         text: data.reply || "I'm reviewing your eligibility criteria now.",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         source: data.source,
         suggestions: [
-          'What are the next application steps?',
-          'Explain required documents.',
-          'Is there any other funding opportunity?',
+          "What are the next application steps?",
+          "Explain required documents.",
+          "Is there any other funding opportunity?",
         ],
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err: any) {
-      console.error('Chat error:', err);
+      console.error("Chat error:", err);
       const fallbackMsg: ChatMessage = {
         id: `asst-${Date.now()}`,
-        role: 'assistant',
-        text: `⚠️ **No answer available.** ${err?.message || 'Copilot could not answer right now.'} Your question was not answered by AI — please try again.`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        source: 'unavailable',
+        role: "assistant",
+        text: `⚠️ **No answer available.** ${err?.message || "Copilot could not answer right now."} Your question was not answered by AI — please try again.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        source: "unavailable",
       };
       setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
@@ -150,13 +160,13 @@ What would you like to explore today?`,
     setMessages([
       {
         id: `init-${Date.now()}`,
-        role: 'assistant',
+        role: "assistant",
         text: `Session reset. Ready to assist with your scholarship search and queries. Ask me anything in English or Hindi!`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         suggestions: [
-          'Which scholarships am I eligible for?',
-          'Explain this scholarship in simple Hindi.',
-          'What documents am I missing?',
+          "Which scholarships am I eligible for?",
+          "Explain this scholarship in simple Hindi.",
+          "What documents am I missing?",
         ],
       },
     ]);
@@ -215,10 +225,10 @@ What would you like to explore today?`,
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
             className={`flex items-start gap-3 ${
-              msg.role === 'user' ? 'justify-end' : 'justify-start'
+              msg.role === "user" ? "justify-end" : "justify-start"
             }`}
           >
-            {msg.role === 'assistant' && (
+            {msg.role === "assistant" && (
               <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#8065FF] to-[#42D9F5] flex items-center justify-center shrink-0 text-white shadow-md">
                 <Bot className="w-4 h-4" />
               </div>
@@ -226,16 +236,16 @@ What would you like to explore today?`,
 
             <div
               className={`max-w-[85%] sm:max-w-[75%] rounded-3xl p-4 text-xs leading-relaxed ${
-                msg.role === 'user'
-                  ? 'bg-gradient-to-r from-[#8065FF] to-[#603bfa] text-white rounded-tr-none shadow-lg shadow-[#8065FF]/20'
-                  : 'glass-card border border-white/10 text-slate-200 rounded-tl-none shadow-xl'
+                msg.role === "user"
+                  ? "bg-gradient-to-r from-[#8065FF] to-[#603bfa] text-white rounded-tr-none shadow-lg shadow-[#8065FF]/20"
+                  : "glass-card border border-white/10 text-slate-200 rounded-tl-none shadow-xl"
               }`}
             >
               <div className="whitespace-pre-wrap">{msg.text}</div>
 
               <div
                 className={`mt-2 flex items-center justify-between text-[10px] ${
-                  msg.role === 'user' ? 'text-violet-200' : 'text-slate-400'
+                  msg.role === "user" ? "text-violet-200" : "text-slate-400"
                 }`}
               >
                 <span>{msg.timestamp}</span>
@@ -267,7 +277,7 @@ What would you like to explore today?`,
               )}
             </div>
 
-            {msg.role === 'user' && (
+            {msg.role === "user" && (
               <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0 text-white text-xs font-bold">
                 {initials}
               </div>
@@ -324,7 +334,8 @@ What would you like to explore today?`,
           </button>
         </form>
         <p className="text-[10px] text-slate-500 text-center mt-1.5">
-          Grantly Copilot uses server-side Gemini 3.8 Flash. Factual advice is grounded in official portal guidelines.
+          Grantly Copilot uses server-side Gemini 3.8 Flash. Factual advice is grounded in official
+          portal guidelines.
         </p>
       </div>
     </div>

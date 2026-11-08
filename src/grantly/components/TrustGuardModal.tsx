@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { ShieldCheck, AlertTriangle, ExternalLink, X, Flag, CheckCircle2 } from 'lucide-react';
-import { Scholarship } from '../types';
-import { reportSuspiciousScholarship } from '../services/storageService';
-import { createTrustGuardReport } from '../services/firebase';
+import React, { useState } from "react";
+import { ShieldCheck, AlertTriangle, ExternalLink, X, Flag, CheckCircle2 } from "lucide-react";
+import { Scholarship } from "../types";
+import { reportSuspiciousScholarship } from "../services/storageService";
+import { createTrustGuardReport } from "../services/firebase";
 
 interface TrustGuardModalProps {
   scholarship: Scholarship;
@@ -10,10 +10,14 @@ interface TrustGuardModalProps {
   onClose: () => void;
 }
 
-export const TrustGuardModal: React.FC<TrustGuardModalProps> = ({ scholarship, isOpen, onClose }) => {
+export const TrustGuardModal: React.FC<TrustGuardModalProps> = ({
+  scholarship,
+  isOpen,
+  onClose,
+}) => {
   const [reporting, setReporting] = useState(false);
-  const [reason, setReason] = useState('advance_fee');
-  const [details, setDetails] = useState('');
+  const [reason, setReason] = useState("advance_fee");
+  const [details, setDetails] = useState("");
   const [reportedSuccess, setReportedSuccess] = useState(false);
 
   if (!isOpen) return null;
@@ -30,7 +34,7 @@ export const TrustGuardModal: React.FC<TrustGuardModalProps> = ({ scholarship, i
     try {
       await createTrustGuardReport(reportData);
     } catch (firestoreErr) {
-      console.warn('Could not save report to Firestore:', firestoreErr);
+      console.warn("Could not save report to Firestore:", firestoreErr);
     }
 
     setReportedSuccess(true);
@@ -41,7 +45,8 @@ export const TrustGuardModal: React.FC<TrustGuardModalProps> = ({ scholarship, i
     }, 2000);
   };
 
-  const isSuspicious = scholarship.verificationStatus === 'Flagged Suspicious' || scholarship.isSuspiciousWarning;
+  const isSuspicious =
+    scholarship.verificationStatus === "Flagged Suspicious" || scholarship.isSuspiciousWarning;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
@@ -49,8 +54,14 @@ export const TrustGuardModal: React.FC<TrustGuardModalProps> = ({ scholarship, i
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl ${isSuspicious ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-[#27C995]/20 text-[#27C995] border border-[#27C995]/30'}`}>
-              {isSuspicious ? <AlertTriangle className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
+            <div
+              className={`p-2.5 rounded-xl ${isSuspicious ? "bg-rose-500/20 text-rose-400 border border-rose-500/30" : "bg-[#27C995]/20 text-[#27C995] border border-[#27C995]/30"}`}
+            >
+              {isSuspicious ? (
+                <AlertTriangle className="w-5 h-5" />
+              ) : (
+                <ShieldCheck className="w-5 h-5" />
+              )}
             </div>
             <div>
               <h3 className="font-heading text-lg font-bold text-white flex items-center gap-2">
@@ -75,21 +86,31 @@ export const TrustGuardModal: React.FC<TrustGuardModalProps> = ({ scholarship, i
                 Opportunity Name
               </span>
               <p className="text-sm font-semibold text-white">{scholarship.name}</p>
-              <p className="text-xs text-slate-400 mt-0.5">Provider: {scholarship.provider} ({scholarship.providerType})</p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Provider: {scholarship.provider} ({scholarship.providerType})
+              </p>
             </div>
 
             {/* Verification Status Details */}
-            <div className={`p-4 rounded-xl border ${isSuspicious ? 'bg-rose-950/40 border-rose-500/40 text-rose-200' : 'bg-emerald-950/30 border-emerald-500/30 text-emerald-200'}`}>
+            <div
+              className={`p-4 rounded-xl border ${isSuspicious ? "bg-rose-950/40 border-rose-500/40 text-rose-200" : "bg-emerald-950/30 border-emerald-500/30 text-emerald-200"}`}
+            >
               <div className="flex items-start gap-2.5">
-                {isSuspicious ? <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" /> : <ShieldCheck className="w-5 h-5 text-[#27C995] shrink-0 mt-0.5" />}
+                {isSuspicious ? (
+                  <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                ) : (
+                  <ShieldCheck className="w-5 h-5 text-[#27C995] shrink-0 mt-0.5" />
+                )}
                 <div>
                   <h4 className="text-sm font-semibold mb-1">
-                    {isSuspicious ? 'High Risk Warning: Suspicious Activity Detected' : 'Audited Educational Opportunity'}
+                    {isSuspicious
+                      ? "High Risk Warning: Suspicious Activity Detected"
+                      : "Audited Educational Opportunity"}
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     {isSuspicious
-                      ? 'This listing was flagged for requesting fees or using unverified communication channels. Genuine scholarships NEVER charge an application or registration fee.'
-                      : 'This opportunity structure has been verified against accredited educational frameworks. All application links lead to simulated official portals.'}
+                      ? "This listing was flagged for requesting fees or using unverified communication channels. Genuine scholarships NEVER charge an application or registration fee."
+                      : "This opportunity structure has been verified against accredited educational frameworks. All application links lead to simulated official portals."}
                   </p>
                 </div>
               </div>
@@ -99,8 +120,10 @@ export const TrustGuardModal: React.FC<TrustGuardModalProps> = ({ scholarship, i
             <div className="space-y-2 text-xs">
               <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/[0.03]">
                 <span className="text-slate-400">Zero Application Fee Rule</span>
-                <span className={`font-semibold ${isSuspicious ? 'text-rose-400 flex items-center gap-1' : 'text-[#27C995] flex items-center gap-1'}`}>
-                  {isSuspicious ? 'Failed: Demands Payment' : 'Passed: 100% Free'}
+                <span
+                  className={`font-semibold ${isSuspicious ? "text-rose-400 flex items-center gap-1" : "text-[#27C995] flex items-center gap-1"}`}
+                >
+                  {isSuspicious ? "Failed: Demands Payment" : "Passed: 100% Free"}
                 </span>
               </div>
               <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/[0.03]">
@@ -117,13 +140,17 @@ export const TrustGuardModal: React.FC<TrustGuardModalProps> = ({ scholarship, i
               </div>
               <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/[0.03]">
                 <span className="text-slate-400">Audit Status</span>
-                <span className="text-slate-300 font-semibold">{scholarship.verificationStatus}</span>
+                <span className="text-slate-300 font-semibold">
+                  {scholarship.verificationStatus}
+                </span>
               </div>
             </div>
 
             {/* Disclaimer Callout */}
             <p className="text-[11px] text-slate-400 bg-[#080D1B]/50 p-2.5 rounded-lg border border-white/5">
-              Verification Notice: Criteria and timelines reflect published educational circulars. Grantly AI does not charge fees or guarantee government funding decisions. Always verify criteria on the official provider portal.
+              Verification Notice: Criteria and timelines reflect published educational circulars.
+              Grantly AI does not charge fees or guarantee government funding decisions. Always
+              verify criteria on the official provider portal.
             </p>
 
             {/* Actions */}
@@ -150,12 +177,15 @@ export const TrustGuardModal: React.FC<TrustGuardModalProps> = ({ scholarship, i
               <div className="py-8 text-center space-y-2">
                 <CheckCircle2 className="w-12 h-12 text-[#27C995] mx-auto animate-bounce" />
                 <h4 className="text-sm font-semibold text-white">Report Submitted to TrustGuard</h4>
-                <p className="text-xs text-slate-400">Thank you for protecting the student community.</p>
+                <p className="text-xs text-slate-400">
+                  Thank you for protecting the student community.
+                </p>
               </div>
             ) : (
               <>
                 <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-300">
-                  Help keep GRANTLY safe. We investigate any scheme asking for upfront fees, private passwords, or fake guaranteed awards.
+                  Help keep GRANTLY safe. We investigate any scheme asking for upfront fees, private
+                  passwords, or fake guaranteed awards.
                 </div>
 
                 <div>
@@ -167,9 +197,13 @@ export const TrustGuardModal: React.FC<TrustGuardModalProps> = ({ scholarship, i
                     onChange={(e) => setReason(e.target.value)}
                     className="w-full bg-[#080D1B] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#8065FF]"
                   >
-                    <option value="advance_fee">Demands upfront "Registration" or "Processing" fee</option>
+                    <option value="advance_fee">
+                      Demands upfront "Registration" or "Processing" fee
+                    </option>
                     <option value="fake_link">Unofficial or phishing external link</option>
-                    <option value="misleading_criteria">Misleading or false eligibility criteria</option>
+                    <option value="misleading_criteria">
+                      Misleading or false eligibility criteria
+                    </option>
                     <option value="impersonation">Impersonating government or college body</option>
                     <option value="other">Other suspicious activity</option>
                   </select>

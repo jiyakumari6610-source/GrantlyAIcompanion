@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   FileCheck,
   Upload,
@@ -21,17 +21,17 @@ import {
   Layers,
   ChevronRight,
   Info,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   getDocuments,
   addDocument,
   deleteDocument,
   calculateDocumentReadiness,
   getStudentProfile,
-} from '../services/storageService';
-import { UploadedDocument, DocumentCategory, Scholarship } from '../types';
-import { AnimatedCounter } from '../components/AnimatedCounter';
-import { useAuth } from '../context/AuthContext';
+} from "../services/storageService";
+import { UploadedDocument, DocumentCategory, Scholarship } from "../types";
+import { AnimatedCounter } from "../components/AnimatedCounter";
+import { useAuth } from "../context/AuthContext";
 import {
   fetchUserDocuments,
   persistUserDocument,
@@ -39,23 +39,23 @@ import {
   analyzeDocumentWithGemini,
   uploadDocumentFileToStorage,
   getDocumentFileUrl,
-} from '../services/firebase';
-import { fetchScholarships } from '../services/firestoreService';
-import { OFFICIAL_SCHOLARSHIPS } from '../data/scholarships';
+} from "../services/firebase";
+import { fetchScholarships } from "../services/firestoreService";
+import { OFFICIAL_SCHOLARSHIPS } from "../data/scholarships";
 import {
   evaluateScholarshipDocumentReadiness,
   ScholarshipDocumentReadiness,
-} from '../utils/documentReadiness';
+} from "../utils/documentReadiness";
 
 const SUPPORTED_CATEGORIES: DocumentCategory[] = [
-  'Aadhaar card',
-  'Income certificate',
-  'Caste certificate',
-  'Domicile certificate',
-  'Marksheet',
-  'Bonafide certificate',
-  'College ID',
-  'Other supporting documents',
+  "Aadhaar card",
+  "Income certificate",
+  "Caste certificate",
+  "Domicile certificate",
+  "Marksheet",
+  "Bonafide certificate",
+  "College ID",
+  "Other supporting documents",
 ];
 
 export const DocumentsPage: React.FC = () => {
@@ -63,7 +63,7 @@ export const DocumentsPage: React.FC = () => {
   const profile = authProfile || getStudentProfile();
 
   const [documents, setDocuments] = useState<UploadedDocument[]>(getDocuments());
-  const [selectedCategory, setSelectedCategory] = useState<DocumentCategory>('Marksheet');
+  const [selectedCategory, setSelectedCategory] = useState<DocumentCategory>("Marksheet");
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -77,9 +77,9 @@ export const DocumentsPage: React.FC = () => {
   // Scholarship Requirement Audit State
   const [scholarshipsList, setScholarshipsList] = useState<Scholarship[]>(OFFICIAL_SCHOLARSHIPS);
   const [selectedScholarshipId, setSelectedScholarshipId] = useState<string>(
-    OFFICIAL_SCHOLARSHIPS[0]?.id || ''
+    OFFICIAL_SCHOLARSHIPS[0]?.id || "",
   );
-  const [activeTab, setActiveTab] = useState<'vault' | 'scholarship-checker'>('vault');
+  const [activeTab, setActiveTab] = useState<"vault" | "scholarship-checker">("vault");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -102,7 +102,7 @@ export const DocumentsPage: React.FC = () => {
             setInspectingDoc(remoteDocs[0]);
           }
         })
-        .catch((err) => console.warn('Could not fetch documents:', err));
+        .catch((err) => console.warn("Could not fetch documents:", err));
     }
   }, [user]);
 
@@ -116,7 +116,7 @@ export const DocumentsPage: React.FC = () => {
           name: selectedScholarship.name,
           requiredDocuments: selectedScholarship.requiredDocuments,
         },
-        documents as any
+        documents as any,
       )
     : null;
 
@@ -139,13 +139,17 @@ export const DocumentsPage: React.FC = () => {
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+    const validTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
     if (!validTypes.includes(file.type)) {
-      setErrorMessage(`Unsupported format "${file.type}". Please upload a valid PDF, JPG, or PNG document.`);
+      setErrorMessage(
+        `Unsupported format "${file.type}". Please upload a valid PDF, JPG, or PNG document.`,
+      );
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setErrorMessage(`File size (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds the 10MB maximum limit.`);
+      setErrorMessage(
+        `File size (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds the 10MB maximum limit.`,
+      );
       return;
     }
 
@@ -182,10 +186,10 @@ export const DocumentsPage: React.FC = () => {
           fileType: file.type,
           mimeType: file.type,
           fileSize: file.size,
-          uploadDate: new Date().toISOString().split('T')[0],
+          uploadDate: new Date().toISOString().split("T")[0],
           uploadedAt: new Date().toISOString(),
-          status: 'analyzing',
-          analysisStatus: 'PENDING',
+          status: "analyzing",
+          analysisStatus: "PENDING",
           readinessScore: 75,
           fileData: base64Data,
           manualVerificationRequired: true,
@@ -200,16 +204,18 @@ export const DocumentsPage: React.FC = () => {
         const updated = addDocument(newDoc);
         setDocuments([...updated]);
         setInspectingDoc(newDoc);
-        setSuccessMessage(`"${file.name}" uploaded to your secure document vault! Ready for AI audit.`);
+        setSuccessMessage(
+          `"${file.name}" uploaded to your secure document vault! Ready for AI audit.`,
+        );
 
         // Automatically trigger real Gemini analysis if token is present
         if (idToken) {
           triggerGeminiAnalysis(newDoc, base64Data, idToken);
         }
       } catch (err: any) {
-        console.error('Document upload error:', err);
+        console.error("Document upload error:", err);
         clearInterval(progressInterval);
-        setErrorMessage(err.message || 'Failed to upload document. Please try again.');
+        setErrorMessage(err.message || "Failed to upload document. Please try again.");
       } finally {
         setTimeout(() => {
           setIsUploading(false);
@@ -223,7 +229,7 @@ export const DocumentsPage: React.FC = () => {
   const triggerGeminiAnalysis = async (
     targetDoc: UploadedDocument,
     base64Override?: string,
-    tokenOverride?: string
+    tokenOverride?: string,
   ) => {
     setIsAnalyzing(true);
     setErrorMessage(null);
@@ -231,7 +237,7 @@ export const DocumentsPage: React.FC = () => {
     try {
       const idToken = tokenOverride || (user ? await user.getIdToken() : null);
       if (!idToken) {
-        setErrorMessage('Authentication required to run AI Document Intelligence.');
+        setErrorMessage("Authentication required to run AI Document Intelligence.");
         setIsAnalyzing(false);
         return;
       }
@@ -259,14 +265,14 @@ export const DocumentsPage: React.FC = () => {
             detectedIssuingAuthority: res.extractedData?.issuingAuthority || undefined,
             detectedDate: res.extractedData?.issueDate || undefined,
             isLegible: res.extractedData?.isLegible ?? true,
-            tamperingRisk: res.inconsistencies?.length ? 'medium' : 'low',
+            tamperingRisk: res.inconsistencies?.length ? "medium" : "low",
             missingOrBlurryFields: res.missingInformation || [],
             verificationNotes:
-              res.extractedData?.readabilityNotes || 'AI audit completed successfully.',
+              res.extractedData?.readabilityNotes || "AI audit completed successfully.",
             recommendation:
-              res.analysisStatus === 'ANALYZED'
-                ? 'Document details extracted. Verify against scheme guidelines.'
-                : 'Review flagged inconsistencies or missing fields.',
+              res.analysisStatus === "ANALYZED"
+                ? "Document details extracted. Verify against scheme guidelines."
+                : "Review flagged inconsistencies or missing fields.",
           },
         };
 
@@ -276,12 +282,12 @@ export const DocumentsPage: React.FC = () => {
         setSuccessMessage(`Gemini audit completed: Status [${res.analysisStatus}].`);
       }
     } catch (err: any) {
-      console.error('Gemini analysis failed:', err);
-      setErrorMessage(`AI Analysis Error: ${err.message || 'Gemini processing failed.'}`);
+      console.error("Gemini analysis failed:", err);
+      setErrorMessage(`AI Analysis Error: ${err.message || "Gemini processing failed."}`);
       // Update doc status to ANALYSIS_FAILED
       const failedDoc: UploadedDocument = {
         ...targetDoc,
-        analysisStatus: 'ANALYSIS_FAILED',
+        analysisStatus: "ANALYSIS_FAILED",
       };
       setDocuments((prev) => prev.map((d) => (d.id === targetDoc.id ? failedDoc : d)));
       if (inspectingDoc?.id === targetDoc.id) {
@@ -309,36 +315,36 @@ export const DocumentsPage: React.FC = () => {
         }
         setSuccessMessage(`Document "${docToDelete.name}" deleted.`);
       } catch (err: any) {
-        console.error('Delete error:', err);
-        setErrorMessage('Failed to delete document. Please try again.');
+        console.error("Delete error:", err);
+        setErrorMessage("Failed to delete document. Please try again.");
       }
     }
   };
 
   const handleDownload = async (doc: UploadedDocument) => {
     if (doc.fileData) {
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = doc.fileData;
       a.download = doc.name;
       a.click();
     } else if (user) {
       if (!doc.storagePath) {
-        setErrorMessage('File is not available in your vault.');
+        setErrorMessage("File is not available in your vault.");
         return;
       }
       const url = await getDocumentFileUrl(doc.storagePath, doc.name);
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     } else {
-      setErrorMessage('Unable to download file. Please sign in.');
+      setErrorMessage("Unable to download file. Please sign in.");
     }
   };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
+    if (e.type === "dragenter" || e.type === "dragover") {
       setDragActive(true);
-    } else if (e.type === 'dragleave') {
+    } else if (e.type === "dragleave") {
       setDragActive(false);
     }
   };
@@ -355,25 +361,25 @@ export const DocumentsPage: React.FC = () => {
   // Helper: Status Chip UI
   const renderStatusBadge = (status?: string) => {
     switch (status) {
-      case 'ANALYZED':
+      case "ANALYZED":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#27C995]/20 text-[#27C995] border border-[#27C995]/30">
             <CheckCircle2 className="w-3 h-3" /> ANALYZED
           </span>
         );
-      case 'NEEDS_REVIEW':
+      case "NEEDS_REVIEW":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
             <AlertTriangle className="w-3 h-3" /> NEEDS REVIEW
           </span>
         );
-      case 'UNREADABLE':
+      case "UNREADABLE":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
             <AlertCircle className="w-3 h-3" /> UNREADABLE
           </span>
         );
-      case 'ANALYSIS_FAILED':
+      case "ANALYSIS_FAILED":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
             <X className="w-3 h-3" /> ANALYSIS FAILED
@@ -409,7 +415,10 @@ export const DocumentsPage: React.FC = () => {
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>{successMessage}</span>
           </div>
-          <button onClick={() => setSuccessMessage(null)} className="text-emerald-400 hover:text-white">
+          <button
+            onClick={() => setSuccessMessage(null)}
+            className="text-emerald-400 hover:text-white"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -430,7 +439,8 @@ export const DocumentsPage: React.FC = () => {
             Document Intelligence Center
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Audit marksheets, income declarations, and caste certificates with server-side AI before applying.
+            Audit marksheets, income declarations, and caste certificates with server-side AI before
+            applying.
           </p>
         </div>
 
@@ -448,22 +458,22 @@ export const DocumentsPage: React.FC = () => {
       {/* View Switcher Tabs */}
       <div className="flex border-b border-white/10 space-x-4">
         <button
-          onClick={() => setActiveTab('vault')}
+          onClick={() => setActiveTab("vault")}
           className={`pb-3 text-xs font-bold transition flex items-center gap-2 ${
-            activeTab === 'vault'
-              ? 'text-white border-b-2 border-[#8065FF]'
-              : 'text-slate-400 hover:text-white'
+            activeTab === "vault"
+              ? "text-white border-b-2 border-[#8065FF]"
+              : "text-slate-400 hover:text-white"
           }`}
         >
           <FileText className="w-4 h-4" />
           <span>My Document Vault ({documents.length})</span>
         </button>
         <button
-          onClick={() => setActiveTab('scholarship-checker')}
+          onClick={() => setActiveTab("scholarship-checker")}
           className={`pb-3 text-xs font-bold transition flex items-center gap-2 ${
-            activeTab === 'scholarship-checker'
-              ? 'text-[#42D9F5] border-b-2 border-[#42D9F5]'
-              : 'text-slate-400 hover:text-white'
+            activeTab === "scholarship-checker"
+              ? "text-[#42D9F5] border-b-2 border-[#42D9F5]"
+              : "text-slate-400 hover:text-white"
           }`}
         >
           <Layers className="w-4 h-4" />
@@ -512,7 +522,7 @@ export const DocumentsPage: React.FC = () => {
                 {readiness.verifiedCount} of {readiness.totalRequired} core categories ready
               </p>
               <span className="text-[10px] text-[#27C995] font-semibold mt-1 inline-block">
-                {readiness.overallScore >= 80 ? 'Application Ready' : 'Certificates Pending'}
+                {readiness.overallScore >= 80 ? "Application Ready" : "Certificates Pending"}
               </span>
             </div>
           </div>
@@ -526,23 +536,25 @@ export const DocumentsPage: React.FC = () => {
               <div className="space-y-1">
                 <p className="text-xs text-amber-300 flex items-center gap-1.5 font-semibold">
                   <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                  Missing essential certificates: {readiness.missingCategories.join(', ')}
+                  Missing essential certificates: {readiness.missingCategories.join(", ")}
                 </p>
                 <p className="text-[11px] text-slate-400">
-                  Upload these files to ensure uninterrupted direct-benefit transfer (DBT) and scrutiny by Institutional Nodal Officers (INO).
+                  Upload these files to ensure uninterrupted direct-benefit transfer (DBT) and
+                  scrutiny by Institutional Nodal Officers (INO).
                 </p>
               </div>
             ) : (
               <p className="text-xs text-[#27C995] flex items-center gap-1.5 font-semibold">
                 <CheckCircle2 className="w-4 h-4" />
-                All 4 essential categories (Marksheet, Income, Bonafide, Identity) are present in your vault!
+                All 4 essential categories (Marksheet, Income, Bonafide, Identity) are present in
+                your vault!
               </p>
             )}
           </div>
         </div>
       </div>
 
-      {activeTab === 'vault' ? (
+      {activeTab === "vault" ? (
         /* Main Grid: Upload Zone + Active Scanner View + Vault List */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Upload & Document List (5 cols) */}
@@ -579,8 +591,8 @@ export const DocumentsPage: React.FC = () => {
                 onClick={() => fileInputRef.current?.click()}
                 className={`p-8 rounded-2xl border-2 border-dashed text-center cursor-pointer transition-all relative overflow-hidden ${
                   dragActive
-                    ? 'border-[#42D9F5] bg-[#42D9F5]/10'
-                    : 'border-white/15 hover:border-[#8065FF]/50 bg-white/[0.02]'
+                    ? "border-[#42D9F5] bg-[#42D9F5]/10"
+                    : "border-white/15 hover:border-[#8065FF]/50 bg-white/[0.02]"
                 }`}
               >
                 <input
@@ -595,7 +607,9 @@ export const DocumentsPage: React.FC = () => {
                   <div className="py-4 space-y-3">
                     <RefreshCw className="w-8 h-8 text-[#42D9F5] mx-auto animate-spin" />
                     <p className="text-xs font-bold text-white">Securing File in Vault...</p>
-                    <p className="text-[11px] text-slate-400">Validating MIME headers & encrypting payload</p>
+                    <p className="text-[11px] text-slate-400">
+                      Validating MIME headers & encrypting payload
+                    </p>
                     <div className="w-48 mx-auto h-1.5 bg-white/10 rounded-full overflow-hidden mt-2">
                       <div
                         className="h-full bg-gradient-to-r from-[#8065FF] to-[#42D9F5] rounded-full transition-all duration-300"
@@ -611,9 +625,7 @@ export const DocumentsPage: React.FC = () => {
                     <h4 className="text-xs font-bold text-white">
                       Click to browse or drop certificate here
                     </h4>
-                    <p className="text-[11px] text-slate-400">
-                      Supports PDF, JPG, PNG (Max 10MB)
-                    </p>
+                    <p className="text-[11px] text-slate-400">Supports PDF, JPG, PNG (Max 10MB)</p>
                   </div>
                 )}
               </div>
@@ -621,7 +633,8 @@ export const DocumentsPage: React.FC = () => {
               <div className="flex items-start gap-2 p-3 rounded-xl bg-white/[0.02] border border-white/5 text-[11px] text-slate-400">
                 <Info className="w-4 h-4 text-[#8065FF] shrink-0 mt-0.5" />
                 <p>
-                  AI analysis extracts facts for scholarship preparation. It does not certify official government legal validity.
+                  AI analysis extracts facts for scholarship preparation. It does not certify
+                  official government legal validity.
                 </p>
               </div>
             </div>
@@ -647,8 +660,8 @@ export const DocumentsPage: React.FC = () => {
                       onClick={() => setInspectingDoc(doc)}
                       className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                         inspectingDoc?.id === doc.id
-                          ? 'bg-[#111A2D] border-[#8065FF]'
-                          : 'bg-[#080D1B]/70 hover:bg-[#111A2D]/60 border-white/5'
+                          ? "bg-[#111A2D] border-[#8065FF]"
+                          : "bg-[#080D1B]/70 hover:bg-[#111A2D]/60 border-white/5"
                       }`}
                     >
                       <div className="flex items-center gap-2.5 overflow-hidden">
@@ -719,7 +732,7 @@ export const DocumentsPage: React.FC = () => {
                   )}
 
                   {/* Preview Content */}
-                  {inspectingDoc.fileData && inspectingDoc.fileType?.startsWith('image/') ? (
+                  {inspectingDoc.fileData && inspectingDoc.fileType?.startsWith("image/") ? (
                     <img
                       src={inspectingDoc.fileData}
                       alt={inspectingDoc.name}
@@ -738,7 +751,7 @@ export const DocumentsPage: React.FC = () => {
 
                       <div className="space-y-1.5 text-[10px] text-slate-300">
                         <p>
-                          Candidate Name:{' '}
+                          Candidate Name:{" "}
                           <strong className="text-white">
                             {inspectingDoc.extractedData?.studentName ||
                               inspectingDoc.aiAnalysis?.detectedName ||
@@ -746,24 +759,24 @@ export const DocumentsPage: React.FC = () => {
                           </strong>
                         </p>
                         <p>
-                          Issuing Body:{' '}
+                          Issuing Body:{" "}
                           <span className="text-slate-300">
                             {inspectingDoc.extractedData?.issuingAuthority ||
                               inspectingDoc.aiAnalysis?.detectedIssuingAuthority ||
-                              'Official Issuing Authority'}
+                              "Official Issuing Authority"}
                           </span>
                         </p>
                         <p className="font-mono text-slate-400">
-                          Issue Date:{' '}
+                          Issue Date:{" "}
                           {inspectingDoc.extractedData?.issueDate ||
                             inspectingDoc.aiAnalysis?.detectedDate ||
-                            'Standard Cycle'}
+                            "Standard Cycle"}
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[9px] text-slate-400">
                         <span>ENCRYPTED VAULT STORAGE</span>
-                        <span>STATUS: {inspectingDoc.analysisStatus || 'PENDING'}</span>
+                        <span>STATUS: {inspectingDoc.analysisStatus || "PENDING"}</span>
                       </div>
                     </div>
                   )}
@@ -774,9 +787,9 @@ export const DocumentsPage: React.FC = () => {
                   <div className="flex items-center gap-2 text-xs">
                     <Sparkles className="w-4 h-4 text-[#8065FF]" />
                     <span className="text-slate-300">
-                      {inspectingDoc.analysisStatus === 'PENDING'
-                        ? 'Ready for multimodal AI analysis'
-                        : `Last audited: ${inspectingDoc.analyzedAt ? new Date(inspectingDoc.analyzedAt).toLocaleDateString() : 'Today'}`}
+                      {inspectingDoc.analysisStatus === "PENDING"
+                        ? "Ready for multimodal AI analysis"
+                        : `Last audited: ${inspectingDoc.analyzedAt ? new Date(inspectingDoc.analyzedAt).toLocaleDateString() : "Today"}`}
                     </span>
                   </div>
 
@@ -794,9 +807,9 @@ export const DocumentsPage: React.FC = () => {
                       <>
                         <Scan className="w-3.5 h-3.5" />
                         <span>
-                          {inspectingDoc.analysisStatus === 'PENDING'
-                            ? 'Run AI Audit'
-                            : 'Re-Analyze with Gemini'}
+                          {inspectingDoc.analysisStatus === "PENDING"
+                            ? "Run AI Audit"
+                            : "Re-Analyze with Gemini"}
                         </span>
                       </>
                     )}
@@ -830,22 +843,24 @@ export const DocumentsPage: React.FC = () => {
                 )}
 
                 {/* Missing Mandatory Information Alert */}
-                {inspectingDoc.missingInformation && inspectingDoc.missingInformation.length > 0 && (
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-amber-500/30 text-xs text-slate-300 space-y-1">
-                    <span className="font-bold text-amber-300 flex items-center gap-1.5">
-                      <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
-                      Missing Mandatory Information:
-                    </span>
-                    <p className="text-[11px] text-slate-400">
-                      {inspectingDoc.missingInformation.join(', ')}
-                    </p>
-                  </div>
-                )}
+                {inspectingDoc.missingInformation &&
+                  inspectingDoc.missingInformation.length > 0 && (
+                    <div className="p-3.5 rounded-xl bg-slate-900 border border-amber-500/30 text-xs text-slate-300 space-y-1">
+                      <span className="font-bold text-amber-300 flex items-center gap-1.5">
+                        <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+                        Missing Mandatory Information:
+                      </span>
+                      <p className="text-[11px] text-slate-400">
+                        {inspectingDoc.missingInformation.join(", ")}
+                      </p>
+                    </div>
+                  )}
 
                 {/* Plain-language explanation (English + Hindi) and eligibility notes */}
                 {(() => {
                   const ex: any = (inspectingDoc as any).extractedData || {};
-                  if (!ex.summaryEnglish && !ex.summaryHindi && !(ex.eligibilityNotes || []).length) return null;
+                  if (!ex.summaryEnglish && !ex.summaryHindi && !(ex.eligibilityNotes || []).length)
+                    return null;
                   return (
                     <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-300 space-y-2">
                       <span className="font-bold text-white">What this document says</span>
@@ -853,13 +868,19 @@ export const DocumentsPage: React.FC = () => {
                       {ex.summaryHindi && <p lang="hi">{ex.summaryHindi}</p>}
                       {(ex.eligibilityNotes || []).length > 0 && (
                         <>
-                          <span className="font-bold text-white block pt-1">Scholarship eligibility hints</span>
+                          <span className="font-bold text-white block pt-1">
+                            Scholarship eligibility hints
+                          </span>
                           <ul className="list-disc pl-4 space-y-0.5">
-                            {ex.eligibilityNotes.map((n: string, i: number) => <li key={i}>{n}</li>)}
+                            {ex.eligibilityNotes.map((n: string, i: number) => (
+                              <li key={i}>{n}</li>
+                            ))}
                           </ul>
                         </>
                       )}
-                      <p className="text-[10px] text-slate-500">AI readiness check only — not an official verification.</p>
+                      <p className="text-[10px] text-slate-500">
+                        AI readiness check only — not an official verification.
+                      </p>
                     </div>
                   );
                 })()}
@@ -877,16 +898,18 @@ export const DocumentsPage: React.FC = () => {
                       <strong className="text-white text-xs">
                         {inspectingDoc.extractedData?.studentName ||
                           inspectingDoc.aiAnalysis?.detectedName ||
-                          'Not available in document'}
+                          "Not available in document"}
                       </strong>
                     </div>
 
                     <div className="p-3.5 rounded-xl bg-[#080D1B]/80 border border-white/5">
-                      <span className="text-slate-400 block text-[11px]">Marks / Academic Record</span>
+                      <span className="text-slate-400 block text-[11px]">
+                        Marks / Academic Record
+                      </span>
                       <strong className="text-white text-xs">
                         {inspectingDoc.extractedData?.marksOrPercentage ||
                           inspectingDoc.aiAnalysis?.detectedMarksOrGpa ||
-                          'Not available in document'}
+                          "Not available in document"}
                       </strong>
                     </div>
 
@@ -895,17 +918,19 @@ export const DocumentsPage: React.FC = () => {
                       <strong className="text-white text-xs">
                         {inspectingDoc.extractedData?.issuingAuthority ||
                           inspectingDoc.aiAnalysis?.detectedIssuingAuthority ||
-                          'Not available'}
+                          "Not available"}
                       </strong>
                     </div>
 
                     <div className="p-3.5 rounded-xl bg-[#080D1B]/80 border border-white/5">
                       <span className="text-slate-400 block text-[11px]">Issue & Expiry Dates</span>
                       <strong className="text-white text-xs">
-                        {inspectingDoc.extractedData?.issueDate || inspectingDoc.aiAnalysis?.detectedDate || 'N/A'}{' '}
+                        {inspectingDoc.extractedData?.issueDate ||
+                          inspectingDoc.aiAnalysis?.detectedDate ||
+                          "N/A"}{" "}
                         {inspectingDoc.extractedData?.expiryDate
                           ? `(Expires: ${inspectingDoc.extractedData.expiryDate})`
-                          : ''}
+                          : ""}
                       </strong>
                     </div>
                   </div>
@@ -921,7 +946,8 @@ export const DocumentsPage: React.FC = () => {
                         <CheckCircle2 className="w-4 h-4 shrink-0" />
                         <span>
                           Confidence: {inspectingDoc.extractedData?.confidenceScore || 88}% (
-                          {inspectingDoc.extractedData?.confidenceTier || 'HIGH'}) • Manual scrutiny required by INO.
+                          {inspectingDoc.extractedData?.confidenceTier || "HIGH"}) • Manual scrutiny
+                          required by INO.
                         </span>
                       </div>
                     </div>
@@ -931,9 +957,12 @@ export const DocumentsPage: React.FC = () => {
             ) : (
               <div className="glass-card rounded-3xl p-12 text-center border border-white/10">
                 <FileCheck className="w-12 h-12 text-slate-500 mx-auto mb-3" />
-                <h3 className="font-heading text-base font-bold text-white">No Document Selected</h3>
+                <h3 className="font-heading text-base font-bold text-white">
+                  No Document Selected
+                </h3>
                 <p className="text-xs text-slate-400 mt-1">
-                  Upload or select a document on the left to start live visual scanning and Gemini extraction.
+                  Upload or select a document on the left to start live visual scanning and Gemini
+                  extraction.
                 </p>
               </div>
             )}
@@ -950,7 +979,8 @@ export const DocumentsPage: React.FC = () => {
                   <span>Scholarship Document Requirement Checker</span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  Select an official scholarship to compare required documents against your uploaded vault files.
+                  Select an official scholarship to compare required documents against your uploaded
+                  vault files.
                 </p>
               </div>
 
@@ -977,7 +1007,9 @@ export const DocumentsPage: React.FC = () => {
                 {/* Completeness Card */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="p-4 rounded-2xl bg-[#080D1B]/80 border border-white/5">
-                    <span className="text-[11px] text-slate-400 block mb-1">Completeness Ratio</span>
+                    <span className="text-[11px] text-slate-400 block mb-1">
+                      Completeness Ratio
+                    </span>
                     <strong className="text-xl font-heading text-white">
                       {scholarshipAudit.completenessRatio} Complete
                     </strong>
@@ -993,19 +1025,21 @@ export const DocumentsPage: React.FC = () => {
                     <span className="text-[11px] text-slate-400 block mb-1">Readiness Status</span>
                     <span
                       className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${
-                        scholarshipAudit.status === 'READY'
-                          ? 'bg-[#27C995]/20 text-[#27C995] border border-[#27C995]/30'
-                          : scholarshipAudit.status === 'PARTIALLY_READY'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                          : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                        scholarshipAudit.status === "READY"
+                          ? "bg-[#27C995]/20 text-[#27C995] border border-[#27C995]/30"
+                          : scholarshipAudit.status === "PARTIALLY_READY"
+                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                            : "bg-rose-500/20 text-rose-300 border border-rose-500/30"
                       }`}
                     >
-                      {scholarshipAudit.status.replace('_', ' ')}
+                      {scholarshipAudit.status.replace("_", " ")}
                     </span>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-[#080D1B]/80 border border-white/5">
-                    <span className="text-[11px] text-slate-400 block mb-1">Available in Vault</span>
+                    <span className="text-[11px] text-slate-400 block mb-1">
+                      Available in Vault
+                    </span>
                     <strong className="text-xl font-heading text-[#27C995]">
                       {scholarshipAudit.availableCount} / {scholarshipAudit.totalRequired}
                     </strong>
@@ -1038,11 +1072,11 @@ export const DocumentsPage: React.FC = () => {
                         >
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              {req.status === 'AVAILABLE' ? (
+                              {req.status === "AVAILABLE" ? (
                                 <CheckCircle2 className="w-4 h-4 text-[#27C995] shrink-0" />
-                              ) : req.status === 'NEEDS_REVIEW' ? (
+                              ) : req.status === "NEEDS_REVIEW" ? (
                                 <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-                              ) : req.status === 'EXPIRED' ? (
+                              ) : req.status === "EXPIRED" ? (
                                 <Clock className="w-4 h-4 text-rose-400 shrink-0" />
                               ) : (
                                 <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
@@ -1060,26 +1094,26 @@ export const DocumentsPage: React.FC = () => {
                           </div>
 
                           <div className="shrink-0">
-                            {req.status === 'AVAILABLE' ? (
+                            {req.status === "AVAILABLE" ? (
                               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#27C995]/20 text-[#27C995] border border-[#27C995]/30">
                                 AVAILABLE
                               </span>
-                            ) : req.status === 'NEEDS_REVIEW' ? (
+                            ) : req.status === "NEEDS_REVIEW" ? (
                               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                                 NEEDS REVIEW
                               </span>
-                            ) : req.status === 'EXPIRED' ? (
+                            ) : req.status === "EXPIRED" ? (
                               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
                                 EXPIRED
                               </span>
                             ) : (
                               <button
                                 onClick={() => {
-                                  setActiveTab('vault');
+                                  setActiveTab("vault");
                                   setSelectedCategory(
                                     SUPPORTED_CATEGORIES.find((c) =>
-                                      c.toLowerCase().includes(req.requiredCategory.toLowerCase())
-                                    ) || 'Marksheet'
+                                      c.toLowerCase().includes(req.requiredCategory.toLowerCase()),
+                                    ) || "Marksheet",
                                   );
                                 }}
                                 className="px-3 py-1 rounded-xl bg-[#8065FF]/20 hover:bg-[#8065FF]/40 text-[#8065FF] text-[10px] font-bold border border-[#8065FF]/40 transition"
@@ -1125,13 +1159,13 @@ export const DocumentsPage: React.FC = () => {
             </div>
 
             <div className="w-full h-96 rounded-2xl bg-[#080D1B] border border-white/10 flex items-center justify-center overflow-hidden">
-              {inspectingDoc.fileData && inspectingDoc.fileType?.startsWith('image/') ? (
+              {inspectingDoc.fileData && inspectingDoc.fileType?.startsWith("image/") ? (
                 <img
                   src={inspectingDoc.fileData}
                   alt={inspectingDoc.name}
                   className="w-full h-full object-contain p-2"
                 />
-              ) : inspectingDoc.fileData && inspectingDoc.fileType === 'application/pdf' ? (
+              ) : inspectingDoc.fileData && inspectingDoc.fileType === "application/pdf" ? (
                 <iframe
                   src={inspectingDoc.fileData}
                   title={inspectingDoc.name}
@@ -1158,7 +1192,7 @@ export const DocumentsPage: React.FC = () => {
 
             <div className="flex items-center justify-between pt-2">
               <span className="text-[11px] text-slate-400">
-                Category: <strong>{inspectingDoc.category}</strong> • Size:{' '}
+                Category: <strong>{inspectingDoc.category}</strong> • Size:{" "}
                 {(inspectingDoc.fileSize / 1024).toFixed(0)} KB
               </span>
               <button
@@ -1193,16 +1227,23 @@ export const DocumentsPage: React.FC = () => {
 
             <div className="space-y-3 text-xs text-slate-300 leading-relaxed">
               <p>
-                <strong>1. Authenticated Isolation:</strong> Every certificate uploaded is scoped strictly to your authenticated Firebase UID (<code className="text-[#42D9F5]">{user?.uid || 'Active Session'}</code>).
+                <strong>1. Authenticated Isolation:</strong> Every certificate uploaded is scoped
+                strictly to your authenticated Firebase UID (
+                <code className="text-[#42D9F5]">{user?.uid || "Active Session"}</code>).
               </p>
               <p>
-                <strong>2. Zero Public URLs:</strong> Storage files and Firestore metadata cannot be read by any unauthorized user or public bot.
+                <strong>2. Zero Public URLs:</strong> Storage files and Firestore metadata cannot be
+                read by any unauthorized user or public bot.
               </p>
               <p>
-                <strong>3. Real Server-Side Gemini Extraction:</strong> Optical document extraction executes via private server-side `@google/genai` calls. No API keys are ever exposed in browser scripts.
+                <strong>3. Real Server-Side Gemini Extraction:</strong> Optical document extraction
+                executes via private server-side `@google/genai` calls. No API keys are ever exposed
+                in browser scripts.
               </p>
               <p>
-                <strong>4. No Legal Verification Claim:</strong> Grantly AI performs readability audits, date consistency checks, and scholarship requirement comparison. We do not issue or represent official government accreditation.
+                <strong>4. No Legal Verification Claim:</strong> Grantly AI performs readability
+                audits, date consistency checks, and scholarship requirement comparison. We do not
+                issue or represent official government accreditation.
               </p>
             </div>
 

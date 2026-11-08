@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 interface AnimatedCounterProps {
   value: number;
@@ -12,8 +12,8 @@ interface AnimatedCounterProps {
 export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   value,
   duration = 1200,
-  prefix = '',
-  suffix = '',
+  prefix = "",
+  suffix = "",
   decimals = 0,
   formatIndian = false,
 }) => {
@@ -21,12 +21,12 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
 
   useEffect(() => {
     // If prefers-reduced-motion is enabled, jump directly to final value
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setDisplayValue(value);
       return;
     }
 
-    let start = 0;
+    const start = 0;
     const startTime = performance.now();
 
     const updateCounter = (currentTime: number) => {
@@ -50,10 +50,10 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   }, [value, duration]);
 
   const formattedNumber = formatIndian
-    ? Math.round(displayValue).toLocaleString('en-IN')
+    ? Math.round(displayValue).toLocaleString("en-IN")
     : decimals > 0
-    ? displayValue.toFixed(decimals)
-    : Math.round(displayValue).toString();
+      ? displayValue.toFixed(decimals)
+      : Math.round(displayValue).toString();
 
   return (
     <span className="tabular-nums">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -8,9 +8,9 @@ import {
   Tooltip,
   Cell,
   CartesianGrid,
-} from 'recharts';
-import { FundingAnalysis } from '../utils/fundingCalculator';
-import { IndianRupee, Sparkles, TrendingUp, AlertCircle, CheckCircle } from 'lucide-react';
+} from "recharts";
+import { FundingAnalysis } from "../utils/fundingCalculator";
+import { IndianRupee, Sparkles, TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
 
 interface FundingGapChartProps {
   funding: FundingAnalysis;
@@ -29,28 +29,28 @@ export const FundingGapChart: React.FC<FundingGapChartProps> = ({ funding }) => 
 
   const chartData = [
     {
-      name: 'Total Cost',
+      name: "Total Cost",
       amount: educationCost,
-      color: '#475569',
-      description: 'Annual college & living expenses',
+      color: "#475569",
+      description: "Annual college & living expenses",
     },
     {
-      name: 'Confirmed',
+      name: "Confirmed",
       amount: confirmedFunding,
-      color: '#27C995',
-      description: 'Family funds & confirmed aid',
+      color: "#27C995",
+      description: "Family funds & confirmed aid",
     },
     {
-      name: 'Potential Aid',
+      name: "Potential Aid",
       amount: bestEligibleSum,
-      color: '#8065FF',
+      color: "#8065FF",
       description: `Top eligible matches (${eligibleMatchesCount} awards)`,
     },
     {
-      name: 'Remaining Gap',
+      name: "Remaining Gap",
       amount: projectedRemainingGap,
-      color: '#F59E0B',
-      description: 'Projected net balance needed',
+      color: "#F59E0B",
+      description: "Projected net balance needed",
     },
   ];
 
@@ -88,7 +88,7 @@ export const FundingGapChart: React.FC<FundingGapChartProps> = ({ funding }) => 
         <div className="p-3 rounded-xl bg-[#080D1B]/80 border border-white/5">
           <span className="text-[11px] text-slate-400 block">Education Cost</span>
           <span className="text-sm font-bold text-white mt-0.5 block">
-            ₹{educationCost.toLocaleString('en-IN')}
+            ₹{educationCost.toLocaleString("en-IN")}
           </span>
           <span className="text-[10px] text-slate-500">Estimated Annual</span>
         </div>
@@ -98,7 +98,7 @@ export const FundingGapChart: React.FC<FundingGapChartProps> = ({ funding }) => 
             <CheckCircle className="w-3 h-3" /> Confirmed
           </span>
           <span className="text-sm font-bold text-white mt-0.5 block">
-            ₹{confirmedFunding.toLocaleString('en-IN')}
+            ₹{confirmedFunding.toLocaleString("en-IN")}
           </span>
           <span className="text-[10px] text-emerald-400/80">Secured Funding</span>
         </div>
@@ -108,7 +108,7 @@ export const FundingGapChart: React.FC<FundingGapChartProps> = ({ funding }) => 
             <Sparkles className="w-3 h-3 text-[#42D9F5]" /> Potential Aid
           </span>
           <span className="text-sm font-bold text-white mt-0.5 block">
-            ₹{bestEligibleSum.toLocaleString('en-IN')}
+            ₹{bestEligibleSum.toLocaleString("en-IN")}
           </span>
           <span className="text-[10px] text-violet-300/80">Top Matched Grants</span>
         </div>
@@ -118,7 +118,7 @@ export const FundingGapChart: React.FC<FundingGapChartProps> = ({ funding }) => 
             <AlertCircle className="w-3 h-3" /> Remaining Gap
           </span>
           <span className="text-sm font-bold text-white mt-0.5 block">
-            ₹{projectedRemainingGap.toLocaleString('en-IN')}
+            ₹{projectedRemainingGap.toLocaleString("en-IN")}
           </span>
           <span className="text-[10px] text-amber-400/80">Projected Balance</span>
         </div>
@@ -128,13 +128,17 @@ export const FundingGapChart: React.FC<FundingGapChartProps> = ({ funding }) => 
       <div className="h-56 w-full pt-2">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 15, right: 10, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" vertical={false} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(255, 255, 255, 0.05)"
+              vertical={false}
+            />
             <XAxis
               dataKey="name"
               stroke="#94A3B8"
               fontSize={11}
               tickLine={false}
-              axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
+              axisLine={{ stroke: "rgba(255, 255, 255, 0.1)" }}
             />
             <YAxis
               stroke="#94A3B8"
@@ -152,7 +156,7 @@ export const FundingGapChart: React.FC<FundingGapChartProps> = ({ funding }) => 
                       <p className="font-bold text-white mb-0.5">{data.name}</p>
                       <p className="text-slate-400 text-[11px] mb-1">{data.description}</p>
                       <p className="font-heading font-bold text-sm text-[#42D9F5]">
-                        ₹{data.amount.toLocaleString('en-IN')}
+                        ₹{data.amount.toLocaleString("en-IN")}
                       </p>
                     </div>
                   );
@@ -170,8 +174,12 @@ export const FundingGapChart: React.FC<FundingGapChartProps> = ({ funding }) => 
       </div>
 
       <div className="pt-3 border-t border-white/5 text-[11px] text-slate-400 flex items-center justify-between">
-        <span>* Rule: Potential scholarship funding is never counted as confirmed until awarded.</span>
-        <span className="text-[#42D9F5] font-semibold">Net requirement: ₹{netFundingRequirement.toLocaleString('en-IN')}</span>
+        <span>
+          * Rule: Potential scholarship funding is never counted as confirmed until awarded.
+        </span>
+        <span className="text-[#42D9F5] font-semibold">
+          Net requirement: ₹{netFundingRequirement.toLocaleString("en-IN")}
+        </span>
       </div>
     </div>
   );

@@ -1,0 +1,6 @@
+{
+  "name": "Grantly AI Companion",
+  "description": "AI-powered scholarship discovery, eligibility matching, document intelligence and application tracking for students.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

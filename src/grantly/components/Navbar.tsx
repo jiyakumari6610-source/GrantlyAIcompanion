@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from '@/lib/router-compat';
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "@/lib/router-compat";
 import {
   GraduationCap,
   Sparkles,
@@ -15,8 +15,8 @@ import {
   LogOut,
   MailCheck,
   ShieldCheck,
-} from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 interface NavbarProps {
   onToggleSidebar?: () => void;
@@ -30,25 +30,25 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   const [verificationNotified, setVerificationNotified] = useState(false);
 
   // Compute initials from real authenticated profile or fallback
-  const displayName = profile?.fullName || user?.displayName || user?.email?.split('@')[0] || '';
+  const displayName = profile?.fullName || user?.displayName || user?.email?.split("@")[0] || "";
   const initials = displayName
     ? displayName
-        .split(' ')
+        .split(" ")
         .filter(Boolean)
         .slice(0, 2)
         .map((n) => n[0].toUpperCase())
-        .join('')
-    : 'ST';
+        .join("")
+    : "ST";
 
   const navLinks = [
-    { label: 'DNA Matcher', path: '/matcher', icon: Dna },
-    { label: 'Scholarships', path: '/scholarships', icon: Compass },
-    { label: 'Documents', path: '/documents', icon: FileCheck },
-    { label: 'Applications', path: '/applications', icon: Kanban },
-    { label: 'Copilot AI', path: '/copilot', icon: Bot },
+    { label: "DNA Matcher", path: "/matcher", icon: Dna },
+    { label: "Scholarships", path: "/scholarships", icon: Compass },
+    { label: "Documents", path: "/documents", icon: FileCheck },
+    { label: "Applications", path: "/applications", icon: Kanban },
+    { label: "Copilot AI", path: "/copilot", icon: Bot },
   ];
 
-  const isLandingPage = location.pathname === '/';
+  const isLandingPage = location.pathname === "/";
 
   const handleMobileToggle = () => {
     if (!isLandingPage && onToggleSidebar) {
@@ -60,7 +60,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
 
   const handleSignOut = async () => {
     await logout();
-    navigate('/');
+    navigate("/");
   };
 
   const handleResendVerification = async () => {
@@ -69,7 +69,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
       setVerificationNotified(true);
       setTimeout(() => setVerificationNotified(false), 4000);
     } catch (e) {
-      console.warn('Could not resend email:', e);
+      console.warn("Could not resend email:", e);
     }
   };
 
@@ -79,12 +79,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
       {user && !emailVerified && (
         <div className="bg-[#8065FF]/20 border-b border-[#8065FF]/30 px-4 py-1.5 text-center text-xs text-slate-200 flex items-center justify-center gap-2">
           <MailCheck className="w-3.5 h-3.5 text-[#42D9F5]" />
-          <span>Please verify your email address (<strong>{user.email}</strong>) to secure your account.</span>
+          <span>
+            Please verify your email address (<strong>{user.email}</strong>) to secure your account.
+          </span>
           <button
             onClick={handleResendVerification}
             className="text-xs font-bold text-[#42D9F5] hover:underline ml-1"
           >
-            {verificationNotified ? 'Verification email sent!' : 'Resend link'}
+            {verificationNotified ? "Verification email sent!" : "Resend link"}
           </button>
         </div>
       )}
@@ -97,7 +99,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition"
             aria-label="Toggle navigation"
           >
-            {mobileMenuOpen && isLandingPage ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen && isLandingPage ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
           </button>
 
           <Link to="/" className="flex items-center gap-2.5 group">
@@ -112,7 +118,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                   GRANTLY<span className="text-[#8065FF]">.AI</span>
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 hidden sm:block">Your Future Deserves Funding.</p>
+              <p className="text-[10px] text-slate-400 hidden sm:block">
+                Your Future Deserves Funding.
+              </p>
             </div>
           </Link>
         </div>
@@ -122,15 +130,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           <nav className="hidden lg:flex items-center gap-1 bg-[#111A2D]/80 p-1.5 rounded-2xl border border-white/5 shadow-inner">
             {navLinks.map((link) => {
               const Icon = link.icon;
-              const isActive = location.pathname === link.path || location.pathname.startsWith(`${link.path}/`);
+              const isActive =
+                location.pathname === link.path || location.pathname.startsWith(`${link.path}/`);
               return (
                 <Link
                   key={link.path}
                   to={link.path}
                   className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all relative ${
                     isActive
-                      ? 'bg-[#8065FF] text-white shadow-md shadow-[#8065FF]/30'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                      ? "bg-[#8065FF] text-white shadow-md shadow-[#8065FF]/30"
+                      : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -157,10 +166,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                 </div>
                 <div className="hidden sm:block text-left max-w-[130px]">
                   <span className="text-xs font-semibold text-white block leading-tight truncate">
-                    {displayName || 'Student'}
+                    {displayName || "Student"}
                   </span>
                   <span className="text-[10px] text-[#42D9F5] block leading-tight font-mono truncate">
-                    {profile?.course || user.email?.split('@')[0]}
+                    {profile?.course || user.email?.split("@")[0]}
                   </span>
                 </div>
               </Link>

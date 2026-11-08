@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from '@/lib/router-compat';
+import React, { useState } from "react";
+import { useParams, Link, useNavigate } from "@/lib/router-compat";
 import {
   ArrowLeft,
   ExternalLink,
@@ -16,8 +16,8 @@ import {
   Share2,
   Info,
   Flag,
-} from 'lucide-react';
-import { DEMO_SCHOLARSHIPS } from '../data/scholarships';
+} from "lucide-react";
+import { DEMO_SCHOLARSHIPS } from "../data/scholarships";
 import {
   getStudentProfile,
   getApplications,
@@ -25,19 +25,19 @@ import {
   getSavedScholarshipIds,
   toggleSaveScholarship,
   getDocuments,
-} from '../services/storageService';
-import { calculateMatchScore } from '../utils/matchingEngine';
-import { MatchScoreIndicator } from '../components/MatchScoreIndicator';
-import { TrustGuardModal } from '../components/TrustGuardModal';
-import { ApplicationStatus, Scholarship } from '../types';
-import { useAuth } from '../context/AuthContext';
+} from "../services/storageService";
+import { calculateMatchScore } from "../utils/matchingEngine";
+import { MatchScoreIndicator } from "../components/MatchScoreIndicator";
+import { TrustGuardModal } from "../components/TrustGuardModal";
+import { ApplicationStatus, Scholarship } from "../types";
+import { useAuth } from "../context/AuthContext";
 import {
   saveScholarshipForUser,
   removeSavedScholarshipForUser,
   fetchScholarshipById,
-} from '../services/firestoreService';
-import { scholarshipDocumentToModel } from '../types/firestore';
-import { persistUserApplication } from '../services/firebase';
+} from "../services/firestoreService";
+import { scholarshipDocumentToModel } from "../types/firestore";
+import { persistUserApplication } from "../services/firebase";
 
 export const ScholarshipDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -49,7 +49,7 @@ export const ScholarshipDetailPage: React.FC = () => {
   const savedIds = getSavedScholarshipIds();
 
   const [scholarship, setScholarship] = useState<Scholarship | null>(
-    () => DEMO_SCHOLARSHIPS.find((s) => s.id === id) || null
+    () => DEMO_SCHOLARSHIPS.find((s) => s.id === id) || null,
   );
   const [loading, setLoading] = useState(!scholarship);
 
@@ -65,6 +65,15 @@ export const ScholarshipDetailPage: React.FC = () => {
         .finally(() => setLoading(false));
     }
   }, [id]);
+
+  const currentApp = scholarship ? applications.find((a) => a.scholarshipId === scholarship.id) : undefined;
+  const [appStatus, setAppStatus] = useState<ApplicationStatus>(
+    currentApp ? currentApp.status : "Saved",
+  );
+  const [appNotes, setAppNotes] = useState<string>(currentApp ? currentApp.notes : "");
+  const [isSaved, setIsSaved] = useState(scholarship ? savedIds.includes(scholarship.id) : false);
+  const [statusUpdatedToast, setStatusUpdatedToast] = useState(false);
+  const [trustGuardOpen, setTrustGuardOpen] = useState(false);
 
   if (!scholarship) {
     return (
@@ -84,12 +93,6 @@ export const ScholarshipDetailPage: React.FC = () => {
 
   // Calculate Match DNA specifically for this scholarship
   const matchResult = calculateMatchScore(profile, scholarship);
-  const currentApp = applications.find((a) => a.scholarshipId === scholarship.id);
-  const [appStatus, setAppStatus] = useState<ApplicationStatus>(currentApp ? currentApp.status : 'Saved');
-  const [appNotes, setAppNotes] = useState<string>(currentApp ? currentApp.notes : '');
-  const [isSaved, setIsSaved] = useState(savedIds.includes(scholarship.id));
-  const [statusUpdatedToast, setStatusUpdatedToast] = useState(false);
-  const [trustGuardOpen, setTrustGuardOpen] = useState(false);
 
   const handleSaveStatus = (newStatus: ApplicationStatus) => {
     setAppStatus(newStatus);
@@ -119,7 +122,8 @@ export const ScholarshipDetailPage: React.FC = () => {
 
   // Check document availability
   const userCategories = new Set(userDocs.map((d) => d.category));
-  const isSuspicious = scholarship.verificationStatus === 'Flagged Suspicious' || scholarship.isSuspiciousWarning;
+  const isSuspicious =
+    scholarship.verificationStatus === "Flagged Suspicious" || scholarship.isSuspiciousWarning;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-20">
@@ -138,11 +142,15 @@ export const ScholarshipDetailPage: React.FC = () => {
             onClick={() => setTrustGuardOpen(true)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
               isSuspicious
-                ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
-                : 'bg-[#27C995]/10 text-[#27C995] border-[#27C995]/20 hover:bg-[#27C995]/20'
+                ? "bg-rose-500/20 text-rose-300 border-rose-500/30"
+                : "bg-[#27C995]/10 text-[#27C995] border-[#27C995]/20 hover:bg-[#27C995]/20"
             }`}
           >
-            {isSuspicious ? <AlertTriangle className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+            {isSuspicious ? (
+              <AlertTriangle className="w-3.5 h-3.5" />
+            ) : (
+              <ShieldCheck className="w-3.5 h-3.5" />
+            )}
             <span>TrustGuard Audit</span>
           </button>
 
@@ -150,12 +158,12 @@ export const ScholarshipDetailPage: React.FC = () => {
             onClick={handleToggleBookmark}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
               isSaved
-                ? 'bg-[#8065FF]/20 text-[#8065FF] border-[#8065FF]/30'
-                : 'bg-white/5 text-slate-400 border-white/10 hover:text-white'
+                ? "bg-[#8065FF]/20 text-[#8065FF] border-[#8065FF]/30"
+                : "bg-white/5 text-slate-400 border-white/10 hover:text-white"
             }`}
           >
-            <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
-            <span>{isSaved ? 'Saved' : 'Save'}</span>
+            <Bookmark className={`w-3.5 h-3.5 ${isSaved ? "fill-current" : ""}`} />
+            <span>{isSaved ? "Saved" : "Save"}</span>
           </button>
         </div>
       </div>
@@ -170,7 +178,8 @@ export const ScholarshipDetailPage: React.FC = () => {
                 Warning: Suspicious / Unverified Listing Flagged
               </h4>
               <p className="text-xs text-rose-300/90 leading-relaxed mt-0.5">
-                This listing requests upfront application fees. Real scholarships NEVER charge fees. Please do not send money or banking credentials.
+                This listing requests upfront application fees. Real scholarships NEVER charge fees.
+                Please do not send money or banking credentials.
               </p>
             </div>
           </div>
@@ -194,9 +203,7 @@ export const ScholarshipDetailPage: React.FC = () => {
             <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-white leading-tight">
               {scholarship.name}
             </h1>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              {scholarship.description}
-            </p>
+            <p className="text-sm text-slate-300 leading-relaxed">{scholarship.description}</p>
             <p className="text-xs text-slate-400">
               Offered by: <strong className="text-white">{scholarship.provider}</strong>
             </p>
@@ -209,9 +216,11 @@ export const ScholarshipDetailPage: React.FC = () => {
             </span>
             <div className="flex items-center gap-1 text-2xl sm:text-3xl font-heading font-extrabold text-[#27C995] mb-1">
               <IndianRupee className="w-6 h-6" />
-              <span>₹{scholarship.awardAmount.toLocaleString('en-IN')}</span>
+              <span>₹{scholarship.awardAmount.toLocaleString("en-IN")}</span>
             </div>
-            <span className="text-xs text-slate-400 mb-4 font-mono">{scholarship.awardFrequency} Aid</span>
+            <span className="text-xs text-slate-400 mb-4 font-mono">
+              {scholarship.awardFrequency} Aid
+            </span>
 
             <MatchScoreIndicator matchResult={matchResult} size="md" />
           </div>
@@ -236,24 +245,42 @@ export const ScholarshipDetailPage: React.FC = () => {
                 <span className="text-slate-400 block mb-1">Minimum Marks Required</span>
                 <span className="text-sm font-bold text-white">{scholarship.minMarks}%</span>
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Your profile: <strong className={profile.percentage >= scholarship.minMarks ? 'text-[#27C995]' : 'text-rose-400'}>{profile.percentage}%</strong>
+                  Your profile:{" "}
+                  <strong
+                    className={
+                      profile.percentage >= scholarship.minMarks
+                        ? "text-[#27C995]"
+                        : "text-rose-400"
+                    }
+                  >
+                    {profile.percentage}%
+                  </strong>
                 </p>
               </div>
 
               <div className="p-3.5 rounded-xl bg-[#080D1B]/70 border border-white/5">
                 <span className="text-slate-400 block mb-1">Maximum Annual Family Income</span>
                 <span className="text-sm font-bold text-white">
-                  ₹{Number(scholarship.maxIncome).toLocaleString('en-IN')} / year
+                  ₹{Number(scholarship.maxIncome).toLocaleString("en-IN")} / year
                 </span>
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Your family income: <strong className={profile.annualFamilyIncome <= scholarship.maxIncome ? 'text-[#27C995]' : 'text-rose-400'}>₹{Number(profile.annualFamilyIncome).toLocaleString('en-IN')}</strong>
+                  Your family income:{" "}
+                  <strong
+                    className={
+                      profile.annualFamilyIncome <= scholarship.maxIncome
+                        ? "text-[#27C995]"
+                        : "text-rose-400"
+                    }
+                  >
+                    ₹{Number(profile.annualFamilyIncome).toLocaleString("en-IN")}
+                  </strong>
                 </p>
               </div>
 
               <div className="p-3.5 rounded-xl bg-[#080D1B]/70 border border-white/5">
                 <span className="text-slate-400 block mb-1">Target Education Cohorts</span>
                 <span className="text-sm font-bold text-white">
-                  {scholarship.educationLevels.join(', ')}
+                  {scholarship.educationLevels.join(", ")}
                 </span>
                 <p className="text-[11px] text-slate-400 mt-1">
                   Your level: <strong className="text-white">{profile.educationLevel}</strong>
@@ -263,7 +290,7 @@ export const ScholarshipDetailPage: React.FC = () => {
               <div className="p-3.5 rounded-xl bg-[#080D1B]/70 border border-white/5">
                 <span className="text-slate-400 block mb-1">Eligible State Domiciles</span>
                 <span className="text-sm font-bold text-white">
-                  {scholarship.eligibleStates.join(', ')}
+                  {scholarship.eligibleStates.join(", ")}
                 </span>
                 <p className="text-[11px] text-slate-400 mt-1">
                   Your state: <strong className="text-white">{profile.state}</strong>
@@ -297,7 +324,10 @@ export const ScholarshipDetailPage: React.FC = () => {
                   Required Documents Checklist
                 </h2>
               </div>
-              <Link to="/documents" className="text-xs text-[#42D9F5] hover:underline font-semibold">
+              <Link
+                to="/documents"
+                className="text-xs text-[#42D9F5] hover:underline font-semibold"
+              >
                 Open Document Center
               </Link>
             </div>
@@ -319,7 +349,9 @@ export const ScholarshipDetailPage: React.FC = () => {
                       <div>
                         <span className="text-white font-semibold block">{docName}</span>
                         <span className="text-[10px] text-slate-400">
-                          {isReady ? 'Uploaded & verified in vault' : 'Action needed: Upload to vault'}
+                          {isReady
+                            ? "Uploaded & verified in vault"
+                            : "Action needed: Upload to vault"}
                         </span>
                       </div>
                     </div>
@@ -327,11 +359,11 @@ export const ScholarshipDetailPage: React.FC = () => {
                     <span
                       className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                         isReady
-                          ? 'bg-[#27C995]/20 text-[#27C995]'
-                          : 'bg-amber-500/20 text-amber-400'
+                          ? "bg-[#27C995]/20 text-[#27C995]"
+                          : "bg-amber-500/20 text-amber-400"
                       }`}
                     >
-                      {isReady ? 'Ready' : 'Missing'}
+                      {isReady ? "Ready" : "Missing"}
                     </span>
                   </div>
                 );
@@ -350,7 +382,10 @@ export const ScholarshipDetailPage: React.FC = () => {
 
             <ol className="space-y-3 text-xs">
               {(scholarship.applicationSteps || []).map((step: string, idx: number) => (
-                <li key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-[#080D1B]/70 border border-white/5">
+                <li
+                  key={idx}
+                  className="flex items-start gap-3 p-3 rounded-xl bg-[#080D1B]/70 border border-white/5"
+                >
                   <span className="w-5 h-5 rounded-full bg-[#8065FF]/20 text-[#8065FF] border border-[#8065FF]/30 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
                     {idx + 1}
                   </span>
@@ -371,7 +406,8 @@ export const ScholarshipDetailPage: React.FC = () => {
                 <ExternalLink className="w-4 h-4" />
               </a>
               <p className="text-[11px] text-slate-400 text-center mt-2">
-                * Official Portal Verification: Always review latest circulars and submit applications directly through the authorized provider portal.
+                * Official Portal Verification: Always review latest circulars and submit
+                applications directly through the authorized provider portal.
               </p>
             </div>
           </div>
@@ -380,9 +416,7 @@ export const ScholarshipDetailPage: React.FC = () => {
         {/* Right 1 Col: Application Tracker Management */}
         <div className="space-y-6">
           <div className="glass-card rounded-3xl p-5 border border-white/10 shadow-xl space-y-4">
-            <h3 className="font-heading text-sm font-bold text-white">
-              Application Tracker
-            </h3>
+            <h3 className="font-heading text-sm font-bold text-white">Application Tracker</h3>
 
             {statusUpdatedToast && (
               <div className="p-2.5 rounded-xl bg-emerald-500/20 text-[#27C995] text-xs font-semibold border border-emerald-500/30 flex items-center gap-2 animate-in fade-in">
@@ -445,7 +479,8 @@ export const ScholarshipDetailPage: React.FC = () => {
             </span>
             <h4 className="text-xs font-bold text-white">Have questions about this grant?</h4>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Ask Grantly Copilot to decode tricky clauses or verify your documents against this scheme.
+              Ask Grantly Copilot to decode tricky clauses or verify your documents against this
+              scheme.
             </p>
             <Link
               to={`/copilot?q=Explain%20how%20I%20can%20win%20the%20${encodeURIComponent(scholarship.name)}`}

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from '@/lib/router-compat';
-import { motion } from 'motion/react';
+import React, { useState } from "react";
+import { Link, useNavigate } from "@/lib/router-compat";
+import { motion } from "motion/react";
 import {
   Sparkles,
   ArrowRight,
@@ -17,10 +17,10 @@ import {
   IndianRupee,
   Calendar,
   Lock,
-} from 'lucide-react';
-import { DEMO_SCHOLARSHIPS } from '../data/scholarships';
-import { Footer } from '../components/Footer';
-import { AiMatchScanModal } from '../components/AiMatchScanModal';
+} from "lucide-react";
+import { DEMO_SCHOLARSHIPS } from "../data/scholarships";
+import { Footer } from "../components/Footer";
+import { AiMatchScanModal } from "../components/AiMatchScanModal";
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ export const LandingPage: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="font-heading text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-[1.08] mb-6"
           >
-            Your Potential Deserves More Than{' '}
+            Your Potential Deserves More Than{" "}
             <span className="bg-gradient-to-r from-[#42D9F5] via-[#8065FF] to-violet-300 bg-clip-text text-transparent">
               Financial Barriers.
             </span>
@@ -70,7 +70,8 @@ export const LandingPage: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-base sm:text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-10"
           >
-            Discover scholarships that match your dreams. Let AI handle the complexity while you focus on your future.
+            Discover scholarships that match your dreams. Let AI handle the complexity while you
+            focus on your future.
           </motion.p>
 
           {/* Staggered Action CTAs */}
@@ -110,11 +111,11 @@ export const LandingPage: React.FC = () => {
             <div className="relative w-full h-[420px] sm:h-[480px] flex items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-[#0c1426]/75 backdrop-blur-2xl shadow-2xl">
               {/* Outer Ring 1 */}
               <div className="absolute w-[360px] h-[360px] sm:w-[500px] sm:h-[500px] rounded-full border border-[#8065FF]/25 border-dashed animate-spin-slow pointer-events-none" />
-              
+
               {/* Inner Elliptical Ring 2 */}
               <div
                 className="absolute w-[280px] h-[280px] sm:w-[380px] sm:h-[380px] rounded-full border border-[#42D9F5]/30 animate-spin-reverse-slow pointer-events-none"
-                style={{ transform: 'rotateX(60deg)' }}
+                style={{ transform: "rotateX(60deg)" }}
               />
 
               {/* Glowing Core Reactor */}
@@ -148,7 +149,9 @@ export const LandingPage: React.FC = () => {
                     </span>
                     <span className="text-[10px] font-bold text-[#27C995]">95% Match</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white line-clamp-1">Pragati Tech Fellowship</h4>
+                  <h4 className="text-xs font-bold text-white line-clamp-1">
+                    Pragati Tech Fellowship
+                  </h4>
                   <div className="flex items-center justify-between text-[11px] text-slate-300 mt-1 font-mono">
                     <span>₹50,000/yr</span>
                     <span className="text-slate-400">Engineering</span>
@@ -165,7 +168,9 @@ export const LandingPage: React.FC = () => {
                     </span>
                     <span className="text-[10px] font-bold text-[#27C995]">92% Match</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white line-clamp-1">National Merit-Means</h4>
+                  <h4 className="text-xs font-bold text-white line-clamp-1">
+                    National Merit-Means
+                  </h4>
                   <div className="flex items-center justify-between text-[11px] text-slate-300 mt-1 font-mono">
                     <span>₹75,000/yr</span>
                     <span className="text-slate-400">All India</span>
@@ -176,7 +181,9 @@ export const LandingPage: React.FC = () => {
               {/* Floating Opportunity Card 3 (Bottom Left) */}
               <div className="absolute bottom-6 left-6 z-20 hidden md:block animate-float-delayed max-w-[200px] text-left">
                 <div className="glass-card p-3 rounded-xl border border-white/10 shadow-lg">
-                  <span className="text-[10px] text-[#42D9F5] font-semibold block">Document Readiness</span>
+                  <span className="text-[10px] text-[#42D9F5] font-semibold block">
+                    Document Readiness
+                  </span>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-sm font-bold text-white">4/4 Audited</span>
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#27C995]" />
@@ -199,7 +206,8 @@ export const LandingPage: React.FC = () => {
               How GRANTLY AI Works
             </h2>
             <p className="text-sm sm:text-base text-slate-400">
-              A high-precision intelligence pipeline from student academic DNA to verified application submission.
+              A high-precision intelligence pipeline from student academic DNA to verified
+              application submission.
             </p>
           </div>
 
@@ -213,7 +221,8 @@ export const LandingPage: React.FC = () => {
               </div>
               <h3 className="font-heading text-base font-bold text-white mb-2">Build Profile</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Enter your academic percentage, state domicile, degree stream, and family income ceiling.
+                Enter your academic percentage, state domicile, degree stream, and family income
+                ceiling.
               </p>
             </div>
 
@@ -226,7 +235,8 @@ export const LandingPage: React.FC = () => {
               </div>
               <h3 className="font-heading text-base font-bold text-white mb-2">DNA Matching</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Deterministic 5-factor weighted engine matches you without false claims or probability guesses.
+                Deterministic 5-factor weighted engine matches you without false claims or
+                probability guesses.
               </p>
             </div>
 
@@ -239,7 +249,8 @@ export const LandingPage: React.FC = () => {
               </div>
               <h3 className="font-heading text-base font-bold text-white mb-2">Audit Documents</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Gemini-powered Document Intelligence verifies clarity, marksheet roll numbers, and income certificates.
+                Gemini-powered Document Intelligence verifies clarity, marksheet roll numbers, and
+                income certificates.
               </p>
             </div>
 
@@ -276,11 +287,17 @@ export const LandingPage: React.FC = () => {
               <div className="p-3 rounded-xl bg-[#8065FF]/20 text-[#8065FF] w-fit mb-4 group-hover:scale-105 transition-transform">
                 <TrendingUp className="w-6 h-6" />
               </div>
-              <h3 className="font-heading text-lg font-bold text-white mb-2">Funding Gap Intelligence</h3>
+              <h3 className="font-heading text-lg font-bold text-white mb-2">
+                Funding Gap Intelligence
+              </h3>
               <p className="text-xs text-slate-400 leading-relaxed mb-4">
-                Real financial separation between confirmed student resources and potential grants. Calculates exact deficit to eliminate dropout risk.
+                Real financial separation between confirmed student resources and potential grants.
+                Calculates exact deficit to eliminate dropout risk.
               </p>
-              <Link to="/dashboard" className="text-xs text-[#42D9F5] font-semibold hover:underline flex items-center gap-1">
+              <Link
+                to="/dashboard"
+                className="text-xs text-[#42D9F5] font-semibold hover:underline flex items-center gap-1"
+              >
                 View Gap Breakdown <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -289,11 +306,17 @@ export const LandingPage: React.FC = () => {
               <div className="p-3 rounded-xl bg-[#42D9F5]/20 text-[#42D9F5] w-fit mb-4 group-hover:scale-105 transition-transform">
                 <Bot className="w-6 h-6" />
               </div>
-              <h3 className="font-heading text-lg font-bold text-white mb-2">Grantly Copilot (Hindi & English)</h3>
+              <h3 className="font-heading text-lg font-bold text-white mb-2">
+                Grantly Copilot (Hindi & English)
+              </h3>
               <p className="text-xs text-slate-400 leading-relaxed mb-4">
-                Ask in plain Hindi or English: "Which scholarships am I eligible for?", "What documents are missing?", or decode tricky criteria instantly.
+                Ask in plain Hindi or English: "Which scholarships am I eligible for?", "What
+                documents are missing?", or decode tricky criteria instantly.
               </p>
-              <Link to="/copilot" className="text-xs text-[#42D9F5] font-semibold hover:underline flex items-center gap-1">
+              <Link
+                to="/copilot"
+                className="text-xs text-[#42D9F5] font-semibold hover:underline flex items-center gap-1"
+              >
                 Open AI Assistant <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -302,11 +325,17 @@ export const LandingPage: React.FC = () => {
               <div className="p-3 rounded-xl bg-[#27C995]/20 text-[#27C995] w-fit mb-4 group-hover:scale-105 transition-transform">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="font-heading text-lg font-bold text-white mb-2">TrustGuard™ Transparency</h3>
+              <h3 className="font-heading text-lg font-bold text-white mb-2">
+                TrustGuard™ Transparency
+              </h3>
               <p className="text-xs text-slate-400 leading-relaxed mb-4">
-                Zero tolerance for fraudulent upfront "application fee" scams. Verified official domains, clear disclaimers, and community suspicious listing reporting.
+                Zero tolerance for fraudulent upfront "application fee" scams. Verified official
+                domains, clear disclaimers, and community suspicious listing reporting.
               </p>
-              <Link to="/scholarships" className="text-xs text-[#27C995] font-semibold hover:underline flex items-center gap-1">
+              <Link
+                to="/scholarships"
+                className="text-xs text-[#27C995] font-semibold hover:underline flex items-center gap-1"
+              >
                 Learn Safety Standards <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -327,7 +356,9 @@ export const LandingPage: React.FC = () => {
             </h3>
 
             <p className="text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              Genuine scholarships never charge an application fee. Grantly AI provides transparent eligibility formulas, links exclusively to official domains, and flags suspicious schemes.
+              Genuine scholarships never charge an application fee. Grantly AI provides transparent
+              eligibility formulas, links exclusively to official domains, and flags suspicious
+              schemes.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 text-xs text-left">
@@ -368,10 +399,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Signature AI Match Scan Modal */}
-      <AiMatchScanModal
-        isOpen={scanModalOpen}
-        onClose={() => setScanModalOpen(false)}
-      />
+      <AiMatchScanModal isOpen={scanModalOpen} onClose={() => setScanModalOpen(false)} />
 
       <Footer />
     </div>

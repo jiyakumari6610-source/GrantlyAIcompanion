@@ -1,27 +1,20 @@
 // Document Intelligence & Vault Type Definitions (Phase 3F)
 
 export type SupportedDocumentMimeType =
-  | 'application/pdf'
-  | 'image/jpeg'
-  | 'image/png'
-  | 'image/jpg';
+  "application/pdf" | "image/jpeg" | "image/png" | "image/jpg";
 
 export type DocumentTypeCategory =
-  | 'Aadhaar card'
-  | 'Income certificate'
-  | 'Caste certificate'
-  | 'Domicile certificate'
-  | 'Marksheet'
-  | 'Bonafide certificate'
-  | 'College ID'
-  | 'Other supporting documents';
+  | "Aadhaar card"
+  | "Income certificate"
+  | "Caste certificate"
+  | "Domicile certificate"
+  | "Marksheet"
+  | "Bonafide certificate"
+  | "College ID"
+  | "Other supporting documents";
 
 export type DocumentAnalysisStatus =
-  | 'PENDING'
-  | 'ANALYZED'
-  | 'NEEDS_REVIEW'
-  | 'UNREADABLE'
-  | 'ANALYSIS_FAILED';
+  "PENDING" | "ANALYZED" | "NEEDS_REVIEW" | "UNREADABLE" | "ANALYSIS_FAILED";
 
 export interface DocumentExtractedData {
   documentType: string;
@@ -36,7 +29,7 @@ export interface DocumentExtractedData {
   isLegible: boolean;
   readabilityNotes: string | null;
   confidenceScore: number; // 0 to 100
-  confidenceTier: 'HIGH' | 'MEDIUM' | 'LOW';
+  confidenceTier: "HIGH" | "MEDIUM" | "LOW";
 }
 
 export interface UserDocumentRecord {
@@ -78,7 +71,7 @@ export interface ScholarshipDocumentItemRequirement {
   requiredCategory: string;
   matchedDocumentId?: string;
   matchedDocumentName?: string;
-  status: 'AVAILABLE' | 'MISSING' | 'NEEDS_REVIEW' | 'EXPIRED' | 'UNREADABLE';
+  status: "AVAILABLE" | "MISSING" | "NEEDS_REVIEW" | "EXPIRED" | "UNREADABLE";
   notes: string;
 }
 
@@ -92,7 +85,7 @@ export interface ScholarshipDocumentReadiness {
   expiredCount: number;
   completenessRatio: string; // e.g. "3/4"
   completenessPercentage: number; // 0 to 100
-  status: 'READY' | 'PARTIALLY_READY' | 'NOT_READY' | 'NO_REQUIREMENTS';
+  status: "READY" | "PARTIALLY_READY" | "NOT_READY" | "NO_REQUIREMENTS";
   hasUnavailableRequirements: boolean;
   requirements: ScholarshipDocumentItemRequirement[];
   disclaimer: string;

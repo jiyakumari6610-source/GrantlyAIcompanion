@@ -7,30 +7,30 @@
  * Normalizes a string by trimming, removing excessive whitespace, and lowercasing.
  */
 export function normalizeString(str?: string | null): string {
-  if (!str || typeof str !== 'string') return '';
-  return str
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, ' ');
+  if (!str || typeof str !== "string") return "";
+  return str.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 /**
  * Strips punctuation and symbols for tokenized degree/course comparisons
  */
 export function cleanPunctuation(str: string): string {
-  return str.replace(/[().,/\-_]/g, ' ').replace(/\s+/g, ' ').trim();
+  return str
+    .replace(/[().,/\-_]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
  * Recognizes recognized Pan-India keywords in eligibleStates
  */
 export const PAN_INDIA_KEYWORDS = new Set([
-  'all india',
-  'all',
-  'pan india',
-  'pan-india',
-  'all states',
-  'india',
+  "all india",
+  "all",
+  "pan india",
+  "pan-india",
+  "all states",
+  "india",
 ]);
 
 /**
@@ -49,13 +49,13 @@ export function isPanIndiaStateList(states?: string[] | null): boolean {
  */
 export function isStateEligible(
   studentState?: string | null,
-  eligibleStates?: string[] | null
+  eligibleStates?: string[] | null,
 ): { passed: boolean; isMissing: boolean; reason: string } {
   if (!eligibleStates || !Array.isArray(eligibleStates) || eligibleStates.length === 0) {
     return {
       passed: false,
       isMissing: true,
-      reason: 'Scholarship has no eligible states specified in criteria.',
+      reason: "Scholarship has no eligible states specified in criteria.",
     };
   }
 
@@ -64,7 +64,7 @@ export function isStateEligible(
     return {
       passed: true,
       isMissing: false,
-      reason: 'Open to residents of all Indian states and Union Territories (Pan-India).',
+      reason: "Open to residents of all Indian states and Union Territories (Pan-India).",
     };
   }
 
@@ -72,7 +72,7 @@ export function isStateEligible(
     return {
       passed: false,
       isMissing: true,
-      reason: 'Student domicile state is missing from profile.',
+      reason: "Student domicile state is missing from profile.",
     };
   }
 
@@ -85,14 +85,14 @@ export function isStateEligible(
     return {
       passed: true,
       isMissing: false,
-      reason: `Student state (${studentState}) matches eligible states quota (${eligibleStates.join(', ')}).`,
+      reason: `Student state (${studentState}) matches eligible states quota (${eligibleStates.join(", ")}).`,
     };
   }
 
   return {
     passed: false,
     isMissing: false,
-    reason: `State domicile requirement not met. Required: ${eligibleStates.join(', ')}. Student profile lists: ${studentState}.`,
+    reason: `State domicile requirement not met. Required: ${eligibleStates.join(", ")}. Student profile lists: ${studentState}.`,
   };
 }
 
@@ -101,68 +101,59 @@ export function isStateEligible(
  */
 const COURSE_CANONICAL_STREAMS: Record<string, string[]> = {
   engineering: [
-    'engineering',
-    'b tech',
-    'btech',
-    'b e',
-    'be',
-    'm tech',
-    'mtech',
-    'computer science',
-    'information technology',
-    'electronics',
-    'mechanical',
-    'civil',
-    'electrical',
-    'bca',
-    'mca',
+    "engineering",
+    "b tech",
+    "btech",
+    "b e",
+    "be",
+    "m tech",
+    "mtech",
+    "computer science",
+    "information technology",
+    "electronics",
+    "mechanical",
+    "civil",
+    "electrical",
+    "bca",
+    "mca",
   ],
-  medicine: [
-    'medicine',
-    'mbbs',
-    'bds',
-    'b pharm',
-    'bpharm',
-    'pharmacy',
-    'nursing',
-    'b sc nursing',
-  ],
+  medicine: ["medicine", "mbbs", "bds", "b pharm", "bpharm", "pharmacy", "nursing", "b sc nursing"],
   sciences: [
-    'sciences',
-    'b sc',
-    'bsc',
-    'm sc',
-    'msc',
-    'physics',
-    'chemistry',
-    'mathematics',
-    'biology',
-    'biotechnology',
-    'agriculture',
+    "sciences",
+    "b sc",
+    "bsc",
+    "m sc",
+    "msc",
+    "physics",
+    "chemistry",
+    "mathematics",
+    "biology",
+    "biotechnology",
+    "agriculture",
   ],
   commerce: [
-    'commerce',
-    'b com',
-    'bcom',
-    'm com',
-    'mcom',
-    'bba',
-    'mba',
-    'chartered accountancy',
-    'finance',
-    'economics',
+    "commerce",
+    "b com",
+    "bcom",
+    "m com",
+    "mcom",
+    "bba",
+    "mba",
+    "chartered accountancy",
+    "finance",
+    "economics",
   ],
   arts: [
-    'arts',
-    'humanities',
-    'b a',
-    'ba',
-    'm a',
-    'ma',
-    'history',
-    'political science',
-    'sociology',
-    'english literature',
+    "arts",
+    "humanities",
+    "b a",
+    "ba",
+    "m a",
+    "ma",
+    "history",
+    "political science",
+    "sociology",
+    "english literature",
   ],
 };
 
@@ -172,24 +163,24 @@ const COURSE_CANONICAL_STREAMS: Record<string, string[]> = {
  */
 export function isCourseEligible(
   studentCourse?: string | null,
-  eligibleCourses?: string[] | null
+  eligibleCourses?: string[] | null,
 ): { passed: boolean; isMissing: boolean; reason: string } {
   if (!eligibleCourses || !Array.isArray(eligibleCourses) || eligibleCourses.length === 0) {
     return {
       passed: false,
       isMissing: true,
-      reason: 'Scholarship has no eligible courses specified.',
+      reason: "Scholarship has no eligible courses specified.",
     };
   }
 
   const normalizedEligible = eligibleCourses.map(normalizeString);
 
   // If scholarship allows all courses
-  if (normalizedEligible.includes('all') || normalizedEligible.includes('all courses')) {
+  if (normalizedEligible.includes("all") || normalizedEligible.includes("all courses")) {
     return {
       passed: true,
       isMissing: false,
-      reason: 'Open to students across all academic courses and degree streams.',
+      reason: "Open to students across all academic courses and degree streams.",
     };
   }
 
@@ -197,7 +188,7 @@ export function isCourseEligible(
     return {
       passed: false,
       isMissing: true,
-      reason: 'Student course/degree stream is missing from profile.',
+      reason: "Student course/degree stream is missing from profile.",
     };
   }
 
@@ -216,7 +207,7 @@ export function isCourseEligible(
     }
 
     // Word boundary check: ensure eligible course appears as distinct word phrase, not partial substring
-    const wordBoundaryRegex = new RegExp(`(^|\\s)${escapeRegex(cleanEligible)}(\\s|$)`, 'i');
+    const wordBoundaryRegex = new RegExp(`(^|\\s)${escapeRegex(cleanEligible)}(\\s|$)`, "i");
     if (wordBoundaryRegex.test(cleanStudentCourse)) {
       return {
         passed: true,
@@ -229,7 +220,7 @@ export function isCourseEligible(
   // 2. Canonical stream alignment (e.g. student in 'B.Tech Computer Science' and eligible is 'Engineering')
   for (const [streamKey, streamKeywords] of Object.entries(COURSE_CANONICAL_STREAMS)) {
     const studentBelongsToStream = streamKeywords.some((kw) => {
-      const reg = new RegExp(`(^|\\s)${escapeRegex(kw)}(\\s|$)`, 'i');
+      const reg = new RegExp(`(^|\\s)${escapeRegex(kw)}(\\s|$)`, "i");
       return reg.test(cleanStudentCourse);
     });
 
@@ -243,7 +234,7 @@ export function isCourseEligible(
         return {
           passed: true,
           isMissing: false,
-          reason: `Student course (${studentCourse}) aligns with target academic stream (${eligibleCourses.join(', ')}).`,
+          reason: `Student course (${studentCourse}) aligns with target academic stream (${eligibleCourses.join(", ")}).`,
         };
       }
     }
@@ -252,7 +243,7 @@ export function isCourseEligible(
   return {
     passed: false,
     isMissing: false,
-    reason: `Course mismatch. Required: ${eligibleCourses.join(', ')}. Student profile lists: ${studentCourse}.`,
+    reason: `Course mismatch. Required: ${eligibleCourses.join(", ")}. Student profile lists: ${studentCourse}.`,
   };
 }
 
@@ -261,12 +252,12 @@ export function isCourseEligible(
  */
 export function isEducationLevelEligible(
   studentLevel?: string | null,
-  scholarshipLevels?: string | string[] | null
+  scholarshipLevels?: string | string[] | null,
 ): { passed: boolean; isMissing: boolean; reason: string } {
   let allowed: string[] = [];
   if (Array.isArray(scholarshipLevels)) {
     allowed = scholarshipLevels;
-  } else if (typeof scholarshipLevels === 'string' && scholarshipLevels.trim().length > 0) {
+  } else if (typeof scholarshipLevels === "string" && scholarshipLevels.trim().length > 0) {
     allowed = [scholarshipLevels];
   }
 
@@ -274,17 +265,17 @@ export function isEducationLevelEligible(
     return {
       passed: false,
       isMissing: true,
-      reason: 'Scholarship has no education levels specified.',
+      reason: "Scholarship has no education levels specified.",
     };
   }
 
   const normalizedAllowed = allowed.map(normalizeString);
 
-  if (normalizedAllowed.includes('all') || normalizedAllowed.includes('all education levels')) {
+  if (normalizedAllowed.includes("all") || normalizedAllowed.includes("all education levels")) {
     return {
       passed: true,
       isMissing: false,
-      reason: 'Open across all higher education and secondary levels.',
+      reason: "Open across all higher education and secondary levels.",
     };
   }
 
@@ -292,7 +283,7 @@ export function isEducationLevelEligible(
     return {
       passed: false,
       isMissing: true,
-      reason: 'Student education level is missing from profile.',
+      reason: "Student education level is missing from profile.",
     };
   }
 
@@ -303,14 +294,14 @@ export function isEducationLevelEligible(
     return {
       passed: true,
       isMissing: false,
-      reason: `Education level (${studentLevel}) matches required level (${allowed.join(', ')}).`,
+      reason: `Education level (${studentLevel}) matches required level (${allowed.join(", ")}).`,
     };
   }
 
   return {
     passed: false,
     isMissing: false,
-    reason: `Education level mismatch. Required: ${allowed.join(', ')}. Student profile lists: ${studentLevel}.`,
+    reason: `Education level mismatch. Required: ${allowed.join(", ")}. Student profile lists: ${studentLevel}.`,
   };
 }
 
@@ -320,7 +311,7 @@ export function isEducationLevelEligible(
  */
 export function isAcademicMarksEligible(
   studentMarks?: number | null,
-  minimumMarks?: number | null
+  minimumMarks?: number | null,
 ): { passed: boolean; isMissing: boolean; reason: string } {
   const min = minimumMarks !== undefined && minimumMarks !== null ? Number(minimumMarks) : 0;
 
@@ -328,7 +319,7 @@ export function isAcademicMarksEligible(
     return {
       passed: false,
       isMissing: true,
-      reason: 'Academic percentage is missing from student profile.',
+      reason: "Academic percentage is missing from student profile.",
     };
   }
 
@@ -355,14 +346,14 @@ export function isAcademicMarksEligible(
  */
 export function isIncomeEligible(
   studentIncome?: number | null,
-  maximumIncome?: number | null
+  maximumIncome?: number | null,
 ): { passed: boolean; isMissing: boolean; reason: string } {
   // If scholarship specifies no limit or 0, it means no income cap applies
   if (maximumIncome === undefined || maximumIncome === null || maximumIncome <= 0) {
     return {
       passed: true,
       isMissing: false,
-      reason: 'No family income restriction specified for this scholarship.',
+      reason: "No family income restriction specified for this scholarship.",
     };
   }
 
@@ -372,7 +363,7 @@ export function isIncomeEligible(
     return {
       passed: false,
       isMissing: true,
-      reason: 'Annual family income is missing from student profile.',
+      reason: "Annual family income is missing from student profile.",
     };
   }
 
@@ -382,14 +373,14 @@ export function isIncomeEligible(
     return {
       passed: true,
       isMissing: false,
-      reason: `Annual family income (₹${income.toLocaleString('en-IN')}) is within the allowable limit of ₹${max.toLocaleString('en-IN')}.`,
+      reason: `Annual family income (₹${income.toLocaleString("en-IN")}) is within the allowable limit of ₹${max.toLocaleString("en-IN")}.`,
     };
   }
 
   return {
     passed: false,
     isMissing: false,
-    reason: `Annual family income exceeds maximum ceiling. Maximum allowed: ₹${max.toLocaleString('en-IN')}, but student income is ₹${income.toLocaleString('en-IN')}.`,
+    reason: `Annual family income exceeds maximum ceiling. Maximum allowed: ₹${max.toLocaleString("en-IN")}, but student income is ₹${income.toLocaleString("en-IN")}.`,
   };
 }
 
@@ -399,36 +390,36 @@ export function isIncomeEligible(
 export function isDeadlineAndStatusEligible(
   deadline?: string | null,
   verificationStatus?: string | null,
-  daysLeft?: number | null
+  daysLeft?: number | null,
 ): { passed: boolean; isMissing: boolean; reason: string; isExpired: boolean; isPending: boolean } {
   // Verification check: Only VERIFIED can produce ELIGIBLE
-  if (verificationStatus === 'EXPIRED_OR_CLOSED') {
+  if (verificationStatus === "EXPIRED_OR_CLOSED") {
     return {
       passed: false,
       isMissing: false,
       isExpired: true,
       isPending: false,
-      reason: 'Application cycle for this scholarship is officially closed.',
+      reason: "Application cycle for this scholarship is officially closed.",
     };
   }
 
-  if (verificationStatus === 'PENDING_VERIFICATION') {
+  if (verificationStatus === "PENDING_VERIFICATION") {
     return {
       passed: false,
       isMissing: true,
       isExpired: false,
       isPending: true,
-      reason: 'Scholarship is pending official circular verification on government portal.',
+      reason: "Scholarship is pending official circular verification on government portal.",
     };
   }
 
-  if (verificationStatus !== 'VERIFIED') {
+  if (verificationStatus !== "VERIFIED") {
     return {
       passed: false,
       isMissing: true,
       isExpired: false,
       isPending: true,
-      reason: `Scholarship has unverified status: ${verificationStatus || 'Unknown'}.`,
+      reason: `Scholarship has unverified status: ${verificationStatus || "Unknown"}.`,
     };
   }
 
@@ -439,7 +430,7 @@ export function isDeadlineAndStatusEligible(
       isMissing: false,
       isExpired: true,
       isPending: false,
-      reason: 'Application deadline has passed (0 days remaining).',
+      reason: "Application deadline has passed (0 days remaining).",
     };
   }
 
@@ -450,23 +441,27 @@ export function isDeadlineAndStatusEligible(
       isMissing: true,
       isExpired: false,
       isPending: false,
-      reason: 'Application deadline is missing from scholarship record.',
+      reason: "Application deadline is missing from scholarship record.",
     };
   }
 
   const cleanDeadline = deadline.trim().toLowerCase();
-  if (cleanDeadline.includes('closed') || cleanDeadline.includes('concluded') || cleanDeadline.includes('expired')) {
+  if (
+    cleanDeadline.includes("closed") ||
+    cleanDeadline.includes("concluded") ||
+    cleanDeadline.includes("expired")
+  ) {
     return {
       passed: false,
       isMissing: false,
       isExpired: true,
       isPending: false,
-      reason: 'Application window has concluded.',
+      reason: "Application window has concluded.",
     };
   }
 
   // Parse YYYY-MM-DD
-  const dateParts = deadline.split('-');
+  const dateParts = deadline.split("-");
   if (dateParts.length === 3) {
     const year = parseInt(dateParts[0], 10);
     const month = parseInt(dateParts[1], 10) - 1;
@@ -496,5 +491,5 @@ export function isDeadlineAndStatusEligible(
 }
 
 function escapeRegex(string: string): string {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

@@ -1,37 +1,40 @@
-import React, { useState } from 'react';
-import { MatchResult } from '../types';
-import { Info, Check, AlertCircle, XCircle } from 'lucide-react';
-import { AnimatedCounter } from './AnimatedCounter';
+import React, { useState } from "react";
+import { MatchResult } from "../types";
+import { Info, Check, AlertCircle, XCircle } from "lucide-react";
+import { AnimatedCounter } from "./AnimatedCounter";
 
 interface MatchScoreIndicatorProps {
   matchResult: MatchResult;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   showBreakdownOnHover?: boolean;
 }
 
 export const MatchScoreIndicator: React.FC<MatchScoreIndicatorProps> = ({
   matchResult,
-  size = 'md',
+  size = "md",
   showBreakdownOnHover = true,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
-  const { score, status, breakdown, mandatoryFailed, mandatoryFailureReason, eligibilityStatus } = matchResult;
+  const { score, status, breakdown, mandatoryFailed, mandatoryFailureReason, eligibilityStatus } =
+    matchResult;
 
-  const currentStatus = eligibilityStatus || (status === 'Eligible' ? 'ELIGIBLE' : status === 'Borderline' ? 'NEEDS_REVIEW' : 'INELIGIBLE');
-  const isEligible = currentStatus === 'ELIGIBLE' && !mandatoryFailed;
-  const isNeedsReview = currentStatus === 'NEEDS_REVIEW';
-  const isIneligible = currentStatus === 'INELIGIBLE' || mandatoryFailed;
+  const currentStatus =
+    eligibilityStatus ||
+    (status === "Eligible" ? "ELIGIBLE" : status === "Borderline" ? "NEEDS_REVIEW" : "INELIGIBLE");
+  const isEligible = currentStatus === "ELIGIBLE" && !mandatoryFailed;
+  const isNeedsReview = currentStatus === "NEEDS_REVIEW";
+  const isIneligible = currentStatus === "INELIGIBLE" || mandatoryFailed;
 
-  const strokeColor = isEligible ? '#27C995' : isNeedsReview ? '#F59E0B' : '#EF4444';
+  const strokeColor = isEligible ? "#27C995" : isNeedsReview ? "#F59E0B" : "#EF4444";
 
   const badgeBg = isEligible
-    ? 'bg-[#27C995]/15 text-[#27C995] border-[#27C995]/30'
+    ? "bg-[#27C995]/15 text-[#27C995] border-[#27C995]/30"
     : isNeedsReview
-    ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-    : 'bg-rose-500/15 text-rose-400 border-rose-500/30';
+      ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+      : "bg-rose-500/15 text-rose-400 border-rose-500/30";
 
-  const circleSize = size === 'sm' ? 46 : size === 'lg' ? 88 : 66;
-  const strokeWidth = size === 'sm' ? 3.5 : size === 'lg' ? 6 : 5;
+  const circleSize = size === "sm" ? 46 : size === "lg" ? 88 : 66;
+  const strokeWidth = size === "sm" ? 3.5 : size === "lg" ? 6 : 5;
   const radius = (circleSize - strokeWidth * 2) / 2;
   const circumference = 2 * Math.PI * radius;
   const hasValidScore = score !== null && score !== undefined && score > 0;
@@ -80,10 +83,14 @@ export const MatchScoreIndicator: React.FC<MatchScoreIndicatorProps> = ({
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <span
             className={`font-heading font-extrabold ${
-              size === 'sm' ? 'text-xs' : size === 'lg' ? 'text-2xl' : 'text-sm'
+              size === "sm" ? "text-xs" : size === "lg" ? "text-2xl" : "text-sm"
             } text-white`}
           >
-            {hasValidScore ? <AnimatedCounter value={score} suffix="%" /> : <span className="text-slate-400">--</span>}
+            {hasValidScore ? (
+              <AnimatedCounter value={score} suffix="%" />
+            ) : (
+              <span className="text-slate-400">--</span>
+            )}
           </span>
         </div>
       </div>
@@ -97,7 +104,7 @@ export const MatchScoreIndicator: React.FC<MatchScoreIndicatorProps> = ({
             {isEligible && <Check className="w-3 h-3" />}
             {isNeedsReview && <AlertCircle className="w-3 h-3" />}
             {isIneligible && <XCircle className="w-3 h-3" />}
-            {isEligible ? 'Eligible' : isNeedsReview ? 'Needs Review' : 'Ineligible'}
+            {isEligible ? "Eligible" : isNeedsReview ? "Needs Review" : "Ineligible"}
           </span>
           <Info className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition" />
         </div>
@@ -111,15 +118,17 @@ export const MatchScoreIndicator: React.FC<MatchScoreIndicatorProps> = ({
             <span className="text-xs font-bold text-white font-heading">
               Eligibility DNA Breakdown
             </span>
-            <span className={`text-xs font-bold ${isEligible ? 'text-[#27C995]' : isNeedsReview ? 'text-amber-400' : 'text-rose-400'}`}>
-              Total: {hasValidScore ? `${score}/100` : 'Review Required'}
+            <span
+              className={`text-xs font-bold ${isEligible ? "text-[#27C995]" : isNeedsReview ? "text-amber-400" : "text-rose-400"}`}
+            >
+              Total: {hasValidScore ? `${score}/100` : "Review Required"}
             </span>
           </div>
 
           {mandatoryFailed && (
             <div className="p-2 mb-2 bg-rose-500/10 border border-rose-500/20 rounded-lg text-[11px] text-rose-300">
               <span className="font-semibold block">Mandatory Exclusion:</span>
-              {mandatoryFailureReason || 'Criteria requirement not met.'}
+              {mandatoryFailureReason || "Criteria requirement not met."}
             </div>
           )}
 

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from '@/lib/router-compat';
+import React, { useState } from "react";
+import { useNavigate } from "@/lib/router-compat";
 import {
   User,
   GraduationCap,
@@ -10,16 +10,16 @@ import {
   CheckCircle2,
   Sparkles,
   Lock,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   getStudentProfile,
   saveStudentProfile,
   resetStudentData,
   loadSampleEvaluationData,
   INITIAL_DEMO_PROFILE,
-} from '../services/storageService';
-import { StudentProfile, EducationLevel, CategoryType } from '../types';
-import { useAuth } from '../context/AuthContext';
+} from "../services/storageService";
+import { StudentProfile, EducationLevel, CategoryType } from "../types";
+import { useAuth } from "../context/AuthContext";
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,12 +39,12 @@ export const ProfilePage: React.FC = () => {
   };
 
   const handleClearProfile = () => {
-    if (window.confirm('Clear your stored profile data from this device?')) {
+    if (window.confirm("Clear your stored profile data from this device?")) {
       setResetting(true);
       resetStudentData();
       setTimeout(() => {
         setResetting(false);
-        navigate('/');
+        navigate("/");
         window.location.reload();
       }, 300);
     }
@@ -85,7 +85,9 @@ export const ProfilePage: React.FC = () => {
             disabled={resetting}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-300 border border-white/10 transition"
           >
-            <RotateCcw className={`w-3.5 h-3.5 ${resetting ? 'animate-spin text-[#42D9F5]' : ''}`} />
+            <RotateCcw
+              className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-[#42D9F5]" : ""}`}
+            />
             <span>Clear Profile Data</span>
           </button>
         </div>
@@ -228,7 +230,9 @@ export const ProfilePage: React.FC = () => {
               </label>
               <select
                 value={profile.academicYear}
-                onChange={(e) => setProfile({ ...profile, academicYear: parseInt(e.target.value, 10) })}
+                onChange={(e) =>
+                  setProfile({ ...profile, academicYear: parseInt(e.target.value, 10) })
+                }
                 className="w-full bg-[#080D1B] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#8065FF]"
               >
                 <option value={1}>1st Year</option>
@@ -355,7 +359,9 @@ export const ProfilePage: React.FC = () => {
         <div className="glass-card rounded-3xl p-6 border border-white/10 shadow-xl space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-white/10">
             <Sparkles className="w-5 h-5 text-amber-400" />
-            <h2 className="font-heading text-base font-bold text-white">Social Category & Special Quotas</h2>
+            <h2 className="font-heading text-base font-bold text-white">
+              Social Category & Special Quotas
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -365,7 +371,9 @@ export const ProfilePage: React.FC = () => {
               </label>
               <select
                 value={profile.category}
-                onChange={(e) => setProfile({ ...profile, category: e.target.value as CategoryType })}
+                onChange={(e) =>
+                  setProfile({ ...profile, category: e.target.value as CategoryType })
+                }
                 className="w-full bg-[#080D1B] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#8065FF]"
               >
                 <option value="OBC">OBC (Other Backward Class)</option>

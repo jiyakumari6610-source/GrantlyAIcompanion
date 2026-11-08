@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link } from '@/lib/router-compat';
-import { motion } from 'motion/react';
+import React, { useState } from "react";
+import { Link } from "@/lib/router-compat";
+import { motion } from "motion/react";
 import {
   Kanban,
   Calendar,
@@ -15,37 +15,68 @@ import {
   Bookmark,
   ChevronRight,
   TrendingUp,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   getApplications,
   updateApplicationStatus,
   removeApplication,
-} from '../services/storageService';
-import { DEMO_SCHOLARSHIPS } from '../data/scholarships';
-import { ApplicationRecord, ApplicationStatus, Scholarship } from '../types';
-import { AnimatedCounter } from '../components/AnimatedCounter';
-import { useAuth } from '../context/AuthContext';
+} from "../services/storageService";
+import { DEMO_SCHOLARSHIPS } from "../data/scholarships";
+import { ApplicationRecord, ApplicationStatus, Scholarship } from "../types";
+import { AnimatedCounter } from "../components/AnimatedCounter";
+import { useAuth } from "../context/AuthContext";
 import {
   fetchUserApplications,
   persistUserApplication,
   deleteUserApplication,
-} from '../services/firebase';
+} from "../services/firebase";
 
-const STATUS_COLUMNS: { status: ApplicationStatus; title: string; color: string; badge: string }[] = [
-  { status: 'Saved', title: 'Saved for Later', color: 'border-slate-500/40 text-slate-300', badge: 'bg-white/5 text-slate-400' },
-  { status: 'Preparing', title: 'Preparing Documents', color: 'border-[#8065FF]/40 text-violet-300', badge: 'bg-[#8065FF]/20 text-violet-300' },
-  { status: 'Ready to Apply', title: 'Ready to Apply', color: 'border-[#42D9F5]/40 text-[#42D9F5]', badge: 'bg-[#42D9F5]/20 text-[#42D9F5]' },
-  { status: 'Applied', title: 'Applied / Submitted', color: 'border-blue-500/40 text-blue-300', badge: 'bg-blue-500/20 text-blue-300' },
-  { status: 'Under Review', title: 'Under Review', color: 'border-amber-500/40 text-amber-300', badge: 'bg-amber-500/20 text-amber-300' },
-  { status: 'Approved', title: 'Approved / Awarded', color: 'border-[#27C995]/40 text-[#27C995]', badge: 'bg-[#27C995]/20 text-[#27C995]' },
-];
+const STATUS_COLUMNS: { status: ApplicationStatus; title: string; color: string; badge: string }[] =
+  [
+    {
+      status: "Saved",
+      title: "Saved for Later",
+      color: "border-slate-500/40 text-slate-300",
+      badge: "bg-white/5 text-slate-400",
+    },
+    {
+      status: "Preparing",
+      title: "Preparing Documents",
+      color: "border-[#8065FF]/40 text-violet-300",
+      badge: "bg-[#8065FF]/20 text-violet-300",
+    },
+    {
+      status: "Ready to Apply",
+      title: "Ready to Apply",
+      color: "border-[#42D9F5]/40 text-[#42D9F5]",
+      badge: "bg-[#42D9F5]/20 text-[#42D9F5]",
+    },
+    {
+      status: "Applied",
+      title: "Applied / Submitted",
+      color: "border-blue-500/40 text-blue-300",
+      badge: "bg-blue-500/20 text-blue-300",
+    },
+    {
+      status: "Under Review",
+      title: "Under Review",
+      color: "border-amber-500/40 text-amber-300",
+      badge: "bg-amber-500/20 text-amber-300",
+    },
+    {
+      status: "Approved",
+      title: "Approved / Awarded",
+      color: "border-[#27C995]/40 text-[#27C995]",
+      badge: "bg-[#27C995]/20 text-[#27C995]",
+    },
+  ];
 
 export const ApplicationsPage: React.FC = () => {
   const { user } = useAuth();
   const [applications, setApplications] = useState<ApplicationRecord[]>(getApplications());
-  const [viewMode, setViewMode] = useState<'kanban' | 'timeline'>('kanban');
+  const [viewMode, setViewMode] = useState<"kanban" | "timeline">("kanban");
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
-  const [notesInput, setNotesInput] = useState<string>('');
+  const [notesInput, setNotesInput] = useState<string>("");
 
   // Fetch applications from Firestore when authenticated
   React.useEffect(() => {
@@ -56,7 +87,7 @@ export const ApplicationsPage: React.FC = () => {
             setApplications(remoteApps);
           }
         })
-        .catch((e) => console.warn('Could not fetch applications from Firestore:', e));
+        .catch((e) => console.warn("Could not fetch applications from Firestore:", e));
     }
   }, [user]);
 
@@ -70,17 +101,21 @@ export const ApplicationsPage: React.FC = () => {
     if (user) {
       const target = updated.find((a) => a.scholarshipId === scholarshipId);
       if (target) {
-        persistUserApplication(user.uid, target).catch((e) => console.warn('Firestore application persist error:', e));
+        persistUserApplication(user.uid, target).catch((e) =>
+          console.warn("Firestore application persist error:", e),
+        );
       }
     }
   };
 
   const handleRemove = (scholarshipId: string) => {
-    if (window.confirm('Remove this application from tracker?')) {
+    if (window.confirm("Remove this application from tracker?")) {
       const updated = removeApplication(scholarshipId);
       setApplications([...updated]);
       if (user) {
-        deleteUserApplication(user.uid, scholarshipId).catch((e) => console.warn('Firestore application delete error:', e));
+        deleteUserApplication(user.uid, scholarshipId).catch((e) =>
+          console.warn("Firestore application delete error:", e),
+        );
       }
     }
   };
@@ -94,7 +129,9 @@ export const ApplicationsPage: React.FC = () => {
       if (user) {
         const target = updated.find((a) => a.scholarshipId === scholarshipId);
         if (target) {
-          persistUserApplication(user.uid, target).catch((e) => console.warn('Firestore application persist error:', e));
+          persistUserApplication(user.uid, target).catch((e) =>
+            console.warn("Firestore application persist error:", e),
+          );
         }
       }
     }
@@ -102,14 +139,15 @@ export const ApplicationsPage: React.FC = () => {
 
   const totalSaved = applications.length;
   const inProgress = applications.filter(
-    (a) => a.status === 'Preparing' || a.status === 'Ready to Apply'
+    (a) => a.status === "Preparing" || a.status === "Ready to Apply",
   ).length;
   const submitted = applications.filter(
-    (a) => a.status === 'Applied' || a.status === 'Under Review'
+    (a) => a.status === "Applied" || a.status === "Under Review",
   ).length;
-  const approved = applications.filter((a) => a.status === 'Approved').length;
+  const approved = applications.filter((a) => a.status === "Approved").length;
 
-  const completionRatio = totalSaved > 0 ? Math.round(((submitted + approved) / totalSaved) * 100) : 0;
+  const completionRatio =
+    totalSaved > 0 ? Math.round(((submitted + approved) / totalSaved) * 100) : 0;
 
   return (
     <div className="space-y-6 pb-20">
@@ -136,21 +174,21 @@ export const ApplicationsPage: React.FC = () => {
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <div className="p-1 rounded-xl bg-white/5 border border-white/10 flex items-center gap-1 text-xs">
             <button
-              onClick={() => setViewMode('kanban')}
+              onClick={() => setViewMode("kanban")}
               className={`px-3.5 py-1.5 rounded-lg font-semibold transition ${
-                viewMode === 'kanban'
-                  ? 'bg-[#8065FF] text-white shadow'
-                  : 'text-slate-400 hover:text-white'
+                viewMode === "kanban"
+                  ? "bg-[#8065FF] text-white shadow"
+                  : "text-slate-400 hover:text-white"
               }`}
             >
               Kanban Board
             </button>
             <button
-              onClick={() => setViewMode('timeline')}
+              onClick={() => setViewMode("timeline")}
               className={`px-3.5 py-1.5 rounded-lg font-semibold transition ${
-                viewMode === 'timeline'
-                  ? 'bg-[#8065FF] text-white shadow'
-                  : 'text-slate-400 hover:text-white'
+                viewMode === "timeline"
+                  ? "bg-[#8065FF] text-white shadow"
+                  : "text-slate-400 hover:text-white"
               }`}
             >
               Timeline View
@@ -215,16 +253,16 @@ export const ApplicationsPage: React.FC = () => {
           <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-gradient-to-r from-[#8065FF] to-[#27C995] rounded-full"
-              initial={{ width: '0%' }}
+              initial={{ width: "0%" }}
               animate={{ width: `${completionRatio}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
             />
           </div>
         </div>
       </div>
 
       {/* KANBAN BOARD VIEW */}
-      {viewMode === 'kanban' && (
+      {viewMode === "kanban" && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {STATUS_COLUMNS.map((col) => {
             const colApps = applications.filter((a) => a.status === col.status);
@@ -285,14 +323,14 @@ export const ApplicationsPage: React.FC = () => {
 
                           <div className="flex items-center justify-between text-[11px] pt-1">
                             <span className="font-semibold text-white flex items-center gap-0.5">
-                              <IndianRupee className="w-3 h-3 text-[#27C995]" />
-                              ₹{scholarship.awardAmount.toLocaleString('en-IN')}
+                              <IndianRupee className="w-3 h-3 text-[#27C995]" />₹
+                              {scholarship.awardAmount.toLocaleString("en-IN")}
                             </span>
                             <span
                               className={`font-mono text-[10px] px-1.5 py-0.5 rounded ${
                                 scholarship.daysLeft <= 15
-                                  ? 'bg-rose-500/20 text-rose-300'
-                                  : 'text-slate-400 bg-white/5'
+                                  ? "bg-rose-500/20 text-rose-300"
+                                  : "text-slate-400 bg-white/5"
                               }`}
                             >
                               {scholarship.daysLeft}d left
@@ -333,7 +371,7 @@ export const ApplicationsPage: React.FC = () => {
                                 className="group cursor-pointer flex items-start justify-between gap-1 text-[11px] text-slate-400 hover:text-slate-200"
                               >
                                 <p className="italic line-clamp-2">
-                                  {app.notes || 'Click to add notes...'}
+                                  {app.notes || "Click to add notes..."}
                                 </p>
                                 <Edit3 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition shrink-0 mt-0.5 text-[#42D9F5]" />
                               </div>
@@ -348,7 +386,10 @@ export const ApplicationsPage: React.FC = () => {
                             <select
                               value={app.status}
                               onChange={(e) =>
-                                handleStatusChange(app.scholarshipId, e.target.value as ApplicationStatus)
+                                handleStatusChange(
+                                  app.scholarshipId,
+                                  e.target.value as ApplicationStatus,
+                                )
                               }
                               className="bg-[#111A2D] border border-white/10 rounded-lg px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#8065FF]"
                             >
@@ -373,7 +414,7 @@ export const ApplicationsPage: React.FC = () => {
       )}
 
       {/* TIMELINE VIEW */}
-      {viewMode === 'timeline' && (
+      {viewMode === "timeline" && (
         <div className="glass-card rounded-3xl p-6 border border-white/10 shadow-xl space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-white/10">
             <h3 className="font-heading text-sm font-bold text-white flex items-center gap-2">
@@ -394,10 +435,10 @@ export const ApplicationsPage: React.FC = () => {
                   <span
                     className={`absolute -left-[9px] top-1.5 w-4 h-4 rounded-full border-2 border-[#080D1B] ${
                       s.daysLeft <= 15
-                        ? 'bg-rose-500 animate-ping'
+                        ? "bg-rose-500 animate-ping"
                         : s.daysLeft <= 30
-                        ? 'bg-amber-500'
-                        : 'bg-[#27C995]'
+                          ? "bg-amber-500"
+                          : "bg-[#27C995]"
                     }`}
                   />
 
@@ -416,11 +457,11 @@ export const ApplicationsPage: React.FC = () => {
                     <div className="flex items-center gap-4 shrink-0 text-right">
                       <div>
                         <span className="text-xs font-bold text-white block">
-                          ₹{s.awardAmount.toLocaleString('en-IN')}
+                          ₹{s.awardAmount.toLocaleString("en-IN")}
                         </span>
                         <span
                           className={`text-[10px] font-bold ${
-                            s.daysLeft <= 15 ? 'text-rose-400' : 'text-amber-400'
+                            s.daysLeft <= 15 ? "text-rose-400" : "text-amber-400"
                           }`}
                         >
                           {s.deadline} ({s.daysLeft}d left)

@@ -1,17 +1,26 @@
-import { createServerFn } from '@tanstack/react-start';
-import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
-import { generateChatCompletion, GatewayError } from '@lovable.dev/ai-gateway';
+import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { GoogleGenAI } from "@google/genai";
+import { DEMO_SCHOLARSHIPS } from "../data/scholarships";
 
-const MODEL = 'google/gemini-3.8-flash' as const;
-const SUPPORTED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+const MODEL_NAME = "gemini-3.8-flash";
+const SUPPORTED_MIME_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
-function textOf(content: unknown): string {
-  if (typeof content === 'string') return content;
-  if (Array.isArray(content)) {
-    return content.map((p: any) => (typeof p === 'string' ? p : p?.text || '')).join('');
+// Initialize the server-side Gemini client
+function getGeminiClient(): GoogleGenAI | null {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return null;
   }
-  return '';
+  return new GoogleGenAI({
+    apiKey,
+    httpOptions: {
+      headers: {
+        "User-Agent": "aistudio-build",
+      },
+    },
+  });
 }
 
 // ==========================================
@@ -24,39 +33,49 @@ type ChatInput = {
   currentScholarship?: Record<string, any> | null;
 };
 
-export const copilotChatFn = createServerFn({ method: 'POST' })
+export const copilotChatFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: ChatInput) => {
-    if (!input || typeof input.message !== 'string' || !input.message.trim()) throw new Error('Message is required');
-    if (input.message.length > 4000) throw new Error('Message is too long');
+    if (!input || typeof input.message !== "string" || !input.message.trim())
+      throw new Error("Message is required");
+    if (input.message.length > 4000) throw new Error("Message is too long");
     return input;
   })
   .handler(async ({ data, context }) => {
-    const { data: catRows } = await context.supabase.from('scholarships').select('data').limit(50);
-    const catalog = (catRows || [])
-      .map((r: any) => r.data || {})
-      .map((c: any) => `- [${c.verificationStatus || 'UNVERIFIED'}] ${c.name} | Provider: ${c.provider} | Award: ₹${c.awardAmount} | Deadline: ${c.deadline || 'not listed'} | Min marks: ${c.minMarks ?? 'n/a'}% | Max income: ₹${c.maxIncome ?? 'n/a'} | Categories: ${(c.categories || []).join('/')} | States: ${(c.eligibleStates || []).join('/')} | Docs: ${(c.requiredDocuments || []).join('; ')} | Official link: ${c.officialSourceUrl || 'not listed'} | Last checked: ${c.lastCheckedAt || 'n/a'}`)
-      .join('\n');
+    let rawRows: any[] = [];
+    try {
+      const { data: catRows } = await context.supabase.from("scholarships").select("data").limit(50);
+      if (catRows && catRows.length > 0) rawRows = catRows.map((r: any) => r.data || {});
+    } catch {
+      rawRows = [];
+    }
+    const catalogList = rawRows.length > 0 ? rawRows : DEMO_SCHOLARSHIPS;
+    const catalog = catalogList
+      .map(
+        (c: any) =>
+          `- [${c.verificationStatus || "UNVERIFIED"}] ${c.name} | Provider: ${c.provider} | Award: ₹${c.awardAmount} | Deadline: ${c.deadline || "not listed"} | Min marks: ${c.minMarks ?? "n/a"}% | Max income: ₹${c.maxIncome ?? "n/a"} | Categories: ${(c.categories || []).join("/")} | States: ${(c.eligibleStates || []).join("/")} | Docs: ${(c.requiredDocuments || []).join("; ")} | Official link: ${c.officialSourceUrl || "not listed"} | Last checked: ${c.lastCheckedAt || "n/a"}`,
+      )
+      .join("\n");
     const p = data.studentProfile;
     const studentContext = p
       ? `Student Profile Context:
-- Name: ${p.fullName || 'Student'}
-- Academic: ${p.course || 'Degree'} at ${p.college || 'College'}, Year ${p.academicYear || 1}, Marks: ${p.percentage || 'N/A'}%
-- Domicile: ${p.state || 'India'}, ${p.city || ''}
-- Family Annual Income: ₹${p.annualFamilyIncome ? Number(p.annualFamilyIncome).toLocaleString('en-IN') : 'N/A'}
-- Category: ${p.category || 'General'}
-- First Generation Learner: ${p.isFirstGen ? 'Yes' : 'No'}`
-      : 'No student profile context provided.';
+- Name: ${p.fullName || "Student"}
+- Academic: ${p.course || "Degree"} at ${p.college || "College"}, Year ${p.academicYear || 1}, Marks: ${p.percentage || "N/A"}%
+- Domicile: ${p.state || "India"}, ${p.city || ""}
+- Family Annual Income: ₹${p.annualFamilyIncome ? Number(p.annualFamilyIncome).toLocaleString("en-IN") : "N/A"}
+- Category: ${p.category || "General"}
+- First Generation Learner: ${p.isFirstGen ? "Yes" : "No"}`
+      : "No student profile context provided.";
     const s = data.currentScholarship;
     const scholarshipContext = s
       ? `Focused Scholarship Context:
 - Name: ${s.name}
 - Provider: ${s.provider}
-- Award: ₹${Number(s.awardAmount).toLocaleString('en-IN')}
-- Eligibility: Min Marks ${s.minMarks}%, Max Income ₹${Number(s.maxIncome).toLocaleString('en-IN')}
-- Required Documents: ${(s.requiredDocuments || []).join(', ')}
+- Award: ₹${Number(s.awardAmount).toLocaleString("en-IN")}
+- Eligibility: Min Marks ${s.minMarks}%, Max Income ₹${Number(s.maxIncome).toLocaleString("en-IN")}
+- Required Documents: ${(s.requiredDocuments || []).join(", ")}
 - Deadline: ${s.deadline}`
-      : '';
+      : "";
 
     const systemInstruction = `You are "Grantly Copilot", an elite, empathetic, and knowledgeable scholarship advisor for GRANTLY AI ("Your Future Deserves Funding").
 You help Indian and international students discover scholarships, understand intricate eligibility criteria, navigate document requirements, compute funding gaps, and craft winning applications.
@@ -73,31 +92,55 @@ Key Guidelines:
 9. Reply in the language the student writes in (simple English or simple Hindi).
 
 GRANTLY CATALOG:
-${catalog || '(catalog unavailable)'}
+${catalog || "(catalog unavailable)"}
 
 ${studentContext}
 ${scholarshipContext}`;
 
-    const history = (data.history || []).slice(-6).map((m) => ({
-      role: (m.role === 'assistant' ? 'assistant' : 'user') as 'assistant' | 'user',
-      content: String(m.text || '').slice(0, 4000),
-    }));
+    const ai = getGeminiClient();
+    if (!ai) {
+      return {
+        reply: `Hello! I am Grantly Copilot. Currently, the server Gemini API key is being initialized. In the meantime, I can confirm that your catalog has ${catalogList.length} scholarship opportunities loaded (including Post-Matric, AICTE Pragati, and e-Kalyan schemes). Please ensure GEMINI_API_KEY is configured in your server secrets.`,
+        source: "system-fallback",
+      };
+    }
 
     try {
-      const res = await generateChatCompletion({
-        model: MODEL,
-        messages: [{ role: 'system', content: systemInstruction }, ...history, { role: 'user', content: data.message }],
+      const contents: any[] = [];
+      const safeHistory = (data.history || []).slice(-6);
+      for (const m of safeHistory) {
+        contents.push({
+          role: m.role === "assistant" ? "model" : "user",
+          parts: [{ text: String(m.text || "").slice(0, 4000) }],
+        });
+      }
+      contents.push({
+        role: "user",
+        parts: [{ text: data.message }],
       });
-      const reply = textOf(res.choices?.[0]?.message?.content) ||
+
+      const res = await ai.models.generateContent({
+        model: MODEL_NAME,
+        contents,
+        config: {
+          systemInstruction,
+        },
+      });
+
+      const reply =
+        res.text?.trim() ||
         "I'm ready to assist with your scholarship search and application steps.";
-      return { reply, source: MODEL };
-    } catch (err) {
-      console.error('Copilot AI error:', err instanceof GatewayError ? err.code : err);
-      const name = err instanceof Error ? err.name : '';
-      if (/Configuration|Authentication/.test(name)) throw new Error('AI is not configured for this project right now.');
-      if (/PaymentRequired/.test(name)) throw new Error('AI credits are exhausted. Please top up and try again.');
-      if (/RateLimit/.test(name)) throw new Error('Copilot is busy right now. Please wait a minute and try again.');
-      throw new Error('Copilot could not answer right now. Please try again.');
+      return { reply, source: MODEL_NAME };
+    } catch (err: any) {
+      console.error("Copilot AI error:", err);
+      const msg = String(err?.message || "");
+      if (/API_KEY_INVALID|PERMISSION_DENIED/i.test(msg)) {
+        throw new Error("AI service authentication failed. Please check the server GEMINI_API_KEY.");
+      }
+      if (/RESOURCE_EXHAUSTED|rate/i.test(msg)) {
+        throw new Error("Copilot is currently receiving high traffic. Please wait a minute and try again.");
+      }
+      throw new Error("Copilot could not answer right now. Please try again.");
     }
   });
 
@@ -112,10 +155,11 @@ type AnalyzeInput = {
   base64Data?: string;
 };
 
-export const analyzeDocumentFn = createServerFn({ method: 'POST' })
+export const analyzeDocumentFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: AnalyzeInput) => {
-    if (!input || typeof input.documentId !== 'string' || !input.documentId) throw new Error('Document ID required.');
+    if (!input || typeof input.documentId !== "string" || !input.documentId)
+      throw new Error("Document ID required.");
     return input;
   })
   .handler(async ({ data, context }) => {
@@ -123,34 +167,52 @@ export const analyzeDocumentFn = createServerFn({ method: 'POST' })
     const docId = data.documentId;
 
     const { data: row } = await supabase
-      .from('documents')
-      .select('data, storage_path')
-      .eq('user_id', userId)
-      .eq('id', docId)
+      .from("documents")
+      .select("data, storage_path")
+      .eq("user_id", userId)
+      .eq("id", docId)
       .maybeSingle();
-    if (!row) throw new Error('Document not found or access denied.');
+    if (!row) throw new Error("Document not found or access denied.");
     const existing = (row.data || {}) as Record<string, any>;
 
-    const effectiveCategory = data.documentType || existing.documentType || existing.category || 'Marksheet';
-    const effectiveFileName = data.fileName || existing.name || existing.fileName || 'document';
-    const effectiveMime = (data.mimeType || existing.mimeType || existing.fileType || 'application/pdf').toLowerCase();
+    const effectiveCategory =
+      data.documentType || existing.documentType || existing.category || "Marksheet";
+    const effectiveFileName = data.fileName || existing.name || existing.fileName || "document";
+    const effectiveMime = (
+      data.mimeType ||
+      existing.mimeType ||
+      existing.fileType ||
+      "application/pdf"
+    ).toLowerCase();
     if (!SUPPORTED_MIME_TYPES.includes(effectiveMime)) {
-      throw new Error(`Invalid file type '${effectiveMime}'. Supported formats are PDF, JPG, and PNG.`);
+      throw new Error(
+        `Invalid file type '${effectiveMime}'. Supported formats are PDF, JPG, and PNG.`,
+      );
     }
 
-    let cleanBase64 = data.base64Data ? data.base64Data.replace(/^data:[a-zA-Z0-9/+.-]+;base64,/, '') : '';
+    let cleanBase64 = data.base64Data
+      ? data.base64Data.replace(/^data:[a-zA-Z0-9/+.-]+;base64,/, "")
+      : "";
     if (!cleanBase64 && row.storage_path) {
-      const { data: blob, error } = await supabase.storage.from('documents').download(row.storage_path);
-      if (error || !blob) throw new Error('Stored document file could not be read.');
+      const { data: blob, error } = await supabase.storage
+        .from("documents")
+        .download(row.storage_path);
+      if (error || !blob) throw new Error("Stored document file could not be read.");
       const bytes = new Uint8Array(await blob.arrayBuffer());
-      let bin = '';
-      for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      let bin = "";
+      for (let i = 0; i < bytes.length; i += 0x8000)
+        bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
       cleanBase64 = btoa(bin);
     }
-    if (!cleanBase64) throw new Error('No document data found for analysis.');
-    if (Math.ceil((cleanBase64.length * 3) / 4) > MAX_FILE_SIZE_BYTES) throw new Error('File size exceeds maximum 10MB limit.');
+    if (!cleanBase64) throw new Error("No document data found for analysis.");
+    if (Math.ceil((cleanBase64.length * 3) / 4) > MAX_FILE_SIZE_BYTES)
+      throw new Error("File size exceeds maximum 10MB limit.");
 
-    const { data: profRow } = await supabase.from('profiles').select('data').eq('id', userId).maybeSingle();
+    const { data: profRow } = await supabase
+      .from("profiles")
+      .select("data")
+      .eq("id", userId)
+      .maybeSingle();
     const profileData = (profRow?.data || null) as Record<string, any> | null;
 
     const systemInstruction = `You are Grantly AI's Document Intelligence Extraction Engine.
@@ -174,66 +236,91 @@ summaryHindi (string: the same explanation in simple Devanagari Hindi),
 eligibilityNotes (string[]: how these details may relate to common Indian scholarship criteria such as income limits, category, domicile or marks; never claim official verification).
 Student profile for context (may be empty): ${JSON.stringify(profileData ? { fullName: profileData.fullName, category: profileData.category, state: profileData.state, annualIncome: profileData.annualIncome, percentage: profileData.percentage } : {})}`;
 
-    const dataUrl = `data:${effectiveMime};base64,${cleanBase64}`;
-    const filePart =
-      effectiveMime === 'application/pdf'
-        ? ({ type: 'file', file: { file_data: dataUrl, filename: effectiveFileName } } as const)
-        : ({ type: 'image_url', image_url: { url: dataUrl } } as const);
-
     const markFailed = async (msg: string) => {
       await supabase
-        .from('documents')
+        .from("documents")
         .update({
-          data: { ...existing, analysisStatus: 'ANALYSIS_FAILED', manualVerificationRequired: true, inconsistencies: [msg], updatedAt: new Date().toISOString() },
+          data: {
+            ...existing,
+            analysisStatus: "ANALYSIS_FAILED",
+            manualVerificationRequired: true,
+            inconsistencies: [msg],
+            updatedAt: new Date().toISOString(),
+          },
           updated_at: new Date().toISOString(),
         })
-        .eq('user_id', userId)
-        .eq('id', docId);
+        .eq("user_id", userId)
+        .eq("id", docId);
     };
 
-    let raw = '';
+    const ai = getGeminiClient();
+    if (!ai) {
+      await markFailed("Server Gemini API key is not configured.");
+      throw new Error(
+        "AI is not configured for this project right now, so no analysis was produced. Your file is still safely stored in Supabase.",
+      );
+    }
+
+    let raw = "";
     try {
-      const res = await generateChatCompletion({
-        model: MODEL,
-        messages: [
-          { role: 'system', content: systemInstruction },
-          { role: 'user', content: [filePart, { type: 'text', text: 'Examine this uploaded certificate/document and return the JSON object.' }] },
-        ],
-        response_format: { type: 'json_object' },
+      const filePart = {
+        inlineData: {
+          mimeType: effectiveMime,
+          data: cleanBase64,
+        },
+      };
+      const textPart = {
+        text: "Examine this uploaded certificate/document and return the structured JSON object.",
+      };
+
+      const res = await ai.models.generateContent({
+        model: MODEL_NAME,
+        contents: [filePart, textPart],
+        config: {
+          systemInstruction,
+          responseMimeType: "application/json",
+        },
       });
-      raw = textOf(res.choices?.[0]?.message?.content) || '{}';
-    } catch (err) {
-      console.error('Document analysis AI error:', err instanceof GatewayError ? err.code : err);
-      await markFailed('AI analysis error: processing failed');
-      const code = err instanceof GatewayError ? (err as any).code : '';
-      const name = err instanceof Error ? err.name : '';
-      if (/Configuration|Authentication/.test(name) || /config|auth/i.test(String(code))) {
-        throw new Error('AI is not configured for this project right now, so no analysis was produced. Your file is still safely stored.');
+
+      raw = res.text?.trim() || "{}";
+    } catch (err: any) {
+      console.error("Document analysis AI error:", err);
+      await markFailed("AI analysis error: processing failed");
+      const msg = String(err?.message || "");
+      if (/API_KEY_INVALID|PERMISSION_DENIED/i.test(msg)) {
+        throw new Error(
+          "AI authentication failed. Your file is safely stored, but optical analysis could not run.",
+        );
       }
-      if (/PaymentRequired/.test(name)) throw new Error('AI credits are exhausted. Please top up and try again.');
-      if (/RateLimit/.test(name)) throw new Error('AI is busy right now. Please wait a minute and try again.');
-      throw new Error('Document analysis failed. The AI could not process the provided file.');
+      if (/RESOURCE_EXHAUSTED|rate/i.test(msg)) {
+        throw new Error("AI service is busy right now. Please try analysis again in a moment.");
+      }
+      throw new Error("Document analysis failed. The AI could not process the provided file.");
     }
 
     let extracted: any = {};
     try {
-      extracted = JSON.parse(raw.trim());
+      extracted = JSON.parse(raw);
     } catch {
       const m = raw.match(/\{[\s\S]*\}/);
       if (!m) {
-        await markFailed('Model did not return valid JSON');
-        throw new Error('Model did not return valid JSON');
+        await markFailed("Model did not return valid JSON");
+        throw new Error("Model did not return valid JSON");
       }
       extracted = JSON.parse(m[0]);
     }
 
     const isLegible = Boolean(extracted.isLegible);
     const confidenceScore = Math.max(0, Math.min(100, Number(extracted.confidenceScore) || 50));
-    const missingInfo: string[] = Array.isArray(extracted.missingMandatoryFields) ? extracted.missingMandatoryFields.filter(Boolean) : [];
-    const inconsistencies: string[] = Array.isArray(extracted.detectedInconsistencies) ? extracted.detectedInconsistencies.filter(Boolean) : [];
+    const missingInfo: string[] = Array.isArray(extracted.missingMandatoryFields)
+      ? extracted.missingMandatoryFields.filter(Boolean)
+      : [];
+    const inconsistencies: string[] = Array.isArray(extracted.detectedInconsistencies)
+      ? extracted.detectedInconsistencies.filter(Boolean)
+      : [];
 
     let expiryWarning: string | null = null;
-    if (extracted.expiryDate && typeof extracted.expiryDate === 'string') {
+    if (extracted.expiryDate && typeof extracted.expiryDate === "string") {
       const exp = new Date(extracted.expiryDate);
       if (!isNaN(exp.getTime()) && exp.getTime() < Date.now()) {
         expiryWarning = `Certificate expired on ${extracted.expiryDate}. Government portals require an active, valid certificate.`;
@@ -241,24 +328,32 @@ Student profile for context (may be empty): ${JSON.stringify(profileData ? { ful
     }
 
     if (profileData && extracted.studentName && profileData.fullName) {
-      const a = String(extracted.studentName).toLowerCase().replace(/[^a-z]/g, '');
-      const b = String(profileData.fullName).toLowerCase().replace(/[^a-z]/g, '');
+      const a = String(extracted.studentName)
+        .toLowerCase()
+        .replace(/[^a-z]/g, "");
+      const b = String(profileData.fullName)
+        .toLowerCase()
+        .replace(/[^a-z]/g, "");
       if (a && b && !a.includes(b) && !b.includes(a)) {
-        inconsistencies.push(`Extracted name "${extracted.studentName}" differs from registered profile name "${profileData.fullName}".`);
+        inconsistencies.push(
+          `Extracted name "${extracted.studentName}" differs from registered profile name "${profileData.fullName}".`,
+        );
       }
     }
 
-    let analysisStatus: 'ANALYZED' | 'NEEDS_REVIEW' | 'UNREADABLE' = 'ANALYZED';
-    if (!isLegible || confidenceScore < 40) analysisStatus = 'UNREADABLE';
-    else if (missingInfo.length || inconsistencies.length || expiryWarning || confidenceScore < 70) analysisStatus = 'NEEDS_REVIEW';
+    let analysisStatus: "ANALYZED" | "NEEDS_REVIEW" | "UNREADABLE" = "ANALYZED";
+    if (!isLegible || confidenceScore < 40) analysisStatus = "UNREADABLE";
+    else if (missingInfo.length || inconsistencies.length || expiryWarning || confidenceScore < 70)
+      analysisStatus = "NEEDS_REVIEW";
 
     const readinessScore =
-      analysisStatus === 'UNREADABLE'
+      analysisStatus === "UNREADABLE"
         ? 30
-        : analysisStatus === 'NEEDS_REVIEW'
+        : analysisStatus === "NEEDS_REVIEW"
           ? Math.min(78, Math.max(50, confidenceScore - 15))
           : Math.min(98, Math.max(82, confidenceScore));
-    const confidenceTier: 'HIGH' | 'MEDIUM' | 'LOW' = confidenceScore >= 80 ? 'HIGH' : confidenceScore >= 50 ? 'MEDIUM' : 'LOW';
+    const confidenceTier: "HIGH" | "MEDIUM" | "LOW" =
+      confidenceScore >= 80 ? "HIGH" : confidenceScore >= 50 ? "MEDIUM" : "LOW";
 
     const extractedData = {
       documentType: extracted.documentType || effectiveCategory,
@@ -271,12 +366,17 @@ Student profile for context (may be empty): ${JSON.stringify(profileData ? { ful
       expiryDate: extracted.expiryDate || null,
       relevantDetails: extracted.relevantDetails || null,
       isLegible,
-      readabilityNotes: extracted.readabilityNotes || (isLegible ? 'Document text clearly readable.' : 'Low clarity scan.'),
+      readabilityNotes:
+        extracted.readabilityNotes ||
+        (isLegible ? "Document text clearly readable." : "Low clarity scan."),
       confidenceScore,
       confidenceTier,
-      summaryEnglish: typeof extracted.summaryEnglish === 'string' ? extracted.summaryEnglish : null,
-      summaryHindi: typeof extracted.summaryHindi === 'string' ? extracted.summaryHindi : null,
-      eligibilityNotes: Array.isArray(extracted.eligibilityNotes) ? extracted.eligibilityNotes.filter(Boolean).map(String) : [],
+      summaryEnglish:
+        typeof extracted.summaryEnglish === "string" ? extracted.summaryEnglish : null,
+      summaryHindi: typeof extracted.summaryHindi === "string" ? extracted.summaryHindi : null,
+      eligibilityNotes: Array.isArray(extracted.eligibilityNotes)
+        ? extracted.eligibilityNotes.filter(Boolean).map(String)
+        : [],
     };
 
     const now = new Date().toISOString();
@@ -298,7 +398,11 @@ Student profile for context (may be empty): ${JSON.stringify(profileData ? { ful
       analyzedAt: now,
       updatedAt: now,
     };
-    await supabase.from('documents').update({ data: document, updated_at: now }).eq('user_id', userId).eq('id', docId);
+    await supabase
+      .from("documents")
+      .update({ data: document, updated_at: now })
+      .eq("user_id", userId)
+      .eq("id", docId);
 
     return {
       success: true,
@@ -310,6 +414,6 @@ Student profile for context (may be empty): ${JSON.stringify(profileData ? { ful
       expiryWarning,
       manualVerificationRequired: true,
       disclaimer:
-        'AI Document Intelligence provides automated optical extraction and consistency audits. Grantly AI does not issue or represent official government legal verifications.',
+        "AI Document Intelligence provides automated optical extraction and consistency audits. Grantly AI does not issue or represent official government legal verifications.",
     };
   });

@@ -2,7 +2,7 @@ import {
   UserDocumentRecord,
   ScholarshipDocumentReadiness,
   ScholarshipDocumentItemRequirement,
-} from '../types/document';
+} from "../types/document";
 
 export type { ScholarshipDocumentReadiness, ScholarshipDocumentItemRequirement };
 
@@ -10,29 +10,53 @@ export type { ScholarshipDocumentReadiness, ScholarshipDocumentItemRequirement }
  * Normalizes a category string to compare document types robustly.
  */
 export function normalizeDocumentCategory(category: string): string {
-  if (!category) return '';
+  if (!category) return "";
   const lower = category.toLowerCase().trim();
 
-  if (lower.includes('mark') || lower.includes('transcript') || lower.includes('grade') || lower.includes('gpa')) {
-    return 'marksheet';
+  if (
+    lower.includes("mark") ||
+    lower.includes("transcript") ||
+    lower.includes("grade") ||
+    lower.includes("gpa")
+  ) {
+    return "marksheet";
   }
-  if (lower.includes('income') || lower.includes('salary') || lower.includes('tehsildar') || lower.includes('revenue')) {
-    return 'income';
+  if (
+    lower.includes("income") ||
+    lower.includes("salary") ||
+    lower.includes("tehsildar") ||
+    lower.includes("revenue")
+  ) {
+    return "income";
   }
-  if (lower.includes('bonafide') || lower.includes('enrollment') || lower.includes('student certificate')) {
-    return 'bonafide';
+  if (
+    lower.includes("bonafide") ||
+    lower.includes("enrollment") ||
+    lower.includes("student certificate")
+  ) {
+    return "bonafide";
   }
-  if (lower.includes('caste') || lower.includes('category') || lower.includes('community') || lower.includes('tribe')) {
-    return 'caste';
+  if (
+    lower.includes("caste") ||
+    lower.includes("category") ||
+    lower.includes("community") ||
+    lower.includes("tribe")
+  ) {
+    return "caste";
   }
-  if (lower.includes('domicile') || lower.includes('resident') || lower.includes('nativity')) {
-    return 'domicile';
+  if (lower.includes("domicile") || lower.includes("resident") || lower.includes("nativity")) {
+    return "domicile";
   }
-  if (lower.includes('aadhaar') || lower.includes('identity') || lower.includes('photo id') || lower.includes('id proof')) {
-    return 'identity';
+  if (
+    lower.includes("aadhaar") ||
+    lower.includes("identity") ||
+    lower.includes("photo id") ||
+    lower.includes("id proof")
+  ) {
+    return "identity";
   }
-  if (lower.includes('college id') || lower.includes('student id')) {
-    return 'college_id';
+  if (lower.includes("college id") || lower.includes("student id")) {
+    return "college_id";
   }
   return lower;
 }
@@ -51,7 +75,7 @@ export function evaluateScholarshipDocumentReadiness(
     name: string;
     requiredDocuments?: string[];
   },
-  userDocuments: UserDocumentRecord[]
+  userDocuments: UserDocumentRecord[],
 ): ScholarshipDocumentReadiness {
   const reqList = scholarship.requiredDocuments || [];
 
@@ -64,12 +88,12 @@ export function evaluateScholarshipDocumentReadiness(
       missingCount: 0,
       needsReviewCount: 0,
       expiredCount: 0,
-      completenessRatio: '0/0',
+      completenessRatio: "0/0",
       completenessPercentage: 100,
-      status: 'NO_REQUIREMENTS',
+      status: "NO_REQUIREMENTS",
       hasUnavailableRequirements: true,
       requirements: [],
-      disclaimer: 'Requirements not available for this scheme. Check the official portal.',
+      disclaimer: "Requirements not available for this scheme. Check the official portal.",
     };
   }
 
@@ -84,8 +108,8 @@ export function evaluateScholarshipDocumentReadiness(
 
     // Find best candidate document among user's uploads
     const matchedDoc = userDocuments.find((doc) => {
-      const docNorm = normalizeDocumentCategory(doc.documentType || '');
-      const fileNorm = normalizeDocumentCategory(doc.fileName || '');
+      const docNorm = normalizeDocumentCategory(doc.documentType || "");
+      const fileNorm = normalizeDocumentCategory(doc.fileName || "");
       return docNorm === targetNorm || fileNorm === targetNorm;
     });
 
@@ -93,7 +117,7 @@ export function evaluateScholarshipDocumentReadiness(
       missingCount++;
       items.push({
         requiredCategory: requiredName,
-        status: 'MISSING',
+        status: "MISSING",
         notes: `Mandatory document not yet uploaded to your document vault.`,
       });
       continue;
@@ -106,45 +130,49 @@ export function evaluateScholarshipDocumentReadiness(
         requiredCategory: requiredName,
         matchedDocumentId: matchedDoc.id || matchedDoc.documentId,
         matchedDocumentName: matchedDoc.fileName,
-        status: 'EXPIRED',
+        status: "EXPIRED",
         notes: matchedDoc.expiryWarning,
       });
       continue;
     }
 
     // Check analysis status
-    if (matchedDoc.analysisStatus === 'UNREADABLE') {
+    if (matchedDoc.analysisStatus === "UNREADABLE") {
       needsReviewCount++;
       items.push({
         requiredCategory: requiredName,
         matchedDocumentId: matchedDoc.id || matchedDoc.documentId,
         matchedDocumentName: matchedDoc.fileName,
-        status: 'UNREADABLE',
-        notes: 'Document marked unreadable by AI audit. Please re-upload a higher contrast scan.',
+        status: "UNREADABLE",
+        notes: "Document marked unreadable by AI audit. Please re-upload a higher contrast scan.",
       });
-    } else if (matchedDoc.analysisStatus === 'NEEDS_REVIEW') {
+    } else if (matchedDoc.analysisStatus === "NEEDS_REVIEW") {
       needsReviewCount++;
       const notes = matchedDoc.inconsistencies?.length
-        ? matchedDoc.inconsistencies.join('; ')
-        : 'Uploaded document has pending warnings or missing fields.';
+        ? matchedDoc.inconsistencies.join("; ")
+        : "Uploaded document has pending warnings or missing fields.";
       items.push({
         requiredCategory: requiredName,
         matchedDocumentId: matchedDoc.id || matchedDoc.documentId,
         matchedDocumentName: matchedDoc.fileName,
-        status: 'NEEDS_REVIEW',
+        status: "NEEDS_REVIEW",
         notes,
       });
-    } else if (matchedDoc.analysisStatus === 'ANALYZED' || matchedDoc.analysisStatus === 'PENDING') {
+    } else if (
+      matchedDoc.analysisStatus === "ANALYZED" ||
+      matchedDoc.analysisStatus === "PENDING"
+    ) {
       // Document is uploaded and ready for submission
       availableCount++;
       items.push({
         requiredCategory: requiredName,
         matchedDocumentId: matchedDoc.id || matchedDoc.documentId,
         matchedDocumentName: matchedDoc.fileName,
-        status: 'AVAILABLE',
-        notes: matchedDoc.analysisStatus === 'ANALYZED'
-          ? 'Audited with AI. All key details visible.'
-          : 'Uploaded to vault. Ready for AI audit.',
+        status: "AVAILABLE",
+        notes:
+          matchedDoc.analysisStatus === "ANALYZED"
+            ? "Audited with AI. All key details visible."
+            : "Uploaded to vault. Ready for AI audit.",
       });
     } else {
       needsReviewCount++;
@@ -152,8 +180,8 @@ export function evaluateScholarshipDocumentReadiness(
         requiredCategory: requiredName,
         matchedDocumentId: matchedDoc.id || matchedDoc.documentId,
         matchedDocumentName: matchedDoc.fileName,
-        status: 'NEEDS_REVIEW',
-        notes: 'Document requires re-analysis or review.',
+        status: "NEEDS_REVIEW",
+        notes: "Document requires re-analysis or review.",
       });
     }
   }
@@ -162,11 +190,11 @@ export function evaluateScholarshipDocumentReadiness(
   const completenessPercentage = Math.round((availableCount / totalRequired) * 100);
   const completenessRatio = `${availableCount}/${totalRequired}`;
 
-  let status: ScholarshipDocumentReadiness['status'] = 'NOT_READY';
+  let status: ScholarshipDocumentReadiness["status"] = "NOT_READY";
   if (availableCount === totalRequired) {
-    status = 'READY';
+    status = "READY";
   } else if (availableCount > 0 || needsReviewCount > 0) {
-    status = 'PARTIALLY_READY';
+    status = "PARTIALLY_READY";
   }
 
   return {
@@ -182,6 +210,7 @@ export function evaluateScholarshipDocumentReadiness(
     status,
     hasUnavailableRequirements: false,
     requirements: items,
-    disclaimer: 'Document completeness is an automated readiness estimation based on uploaded files and AI analysis. It is not an official legal validation or guarantee of application acceptance.',
+    disclaimer:
+      "Document completeness is an automated readiness estimation based on uploaded files and AI analysis. It is not an official legal validation or guarantee of application acceptance.",
   };
 }

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from '@/lib/router-compat';
+import React, { useState } from "react";
+import { useNavigate } from "@/lib/router-compat";
 import {
   User,
   GraduationCap,
@@ -10,14 +10,14 @@ import {
   CheckCircle2,
   ShieldCheck,
   Dna,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   getStudentProfile,
   saveStudentProfile,
   INITIAL_DEMO_PROFILE,
-} from '../services/storageService';
-import { StudentProfile, EducationLevel, CategoryType } from '../types';
-import { useAuth } from '../context/AuthContext';
+} from "../services/storageService";
+import { StudentProfile, EducationLevel, CategoryType } from "../types";
+import { useAuth } from "../context/AuthContext";
 
 export const OnboardingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,26 +27,26 @@ export const OnboardingPage: React.FC = () => {
   const [step, setStep] = useState(1);
   const [profile, setProfile] = useState<StudentProfile>({
     ...existing,
-    id: user?.uid || existing.id || '',
-    fullName: user?.displayName || authProfile?.fullName || existing.fullName || '',
-    email: user?.email || authProfile?.email || existing.email || '',
-    state: existing.state || 'Jharkhand',
-    city: existing.city || '',
-    dob: existing.dob || '2004-01-01',
-    gender: existing.gender || 'Male',
-    educationLevel: existing.educationLevel || 'Undergraduate',
-    course: existing.course || '',
-    college: existing.college || '',
+    id: user?.uid || existing.id || "",
+    fullName: user?.displayName || authProfile?.fullName || existing.fullName || "",
+    email: user?.email || authProfile?.email || existing.email || "",
+    state: existing.state || "Jharkhand",
+    city: existing.city || "",
+    dob: existing.dob || "2004-01-01",
+    gender: existing.gender || "Male",
+    educationLevel: existing.educationLevel || "Undergraduate",
+    course: existing.course || "",
+    college: existing.college || "",
     academicYear: existing.academicYear || 1,
     percentage: existing.percentage || 78,
     annualFamilyIncome: existing.annualFamilyIncome || 220000,
-    financialBackground: existing.financialBackground || '',
+    financialBackground: existing.financialBackground || "",
     estimatedAnnualEducationCost: existing.estimatedAnnualEducationCost || 150000,
     confirmedFunding: existing.confirmedFunding || 0,
-    category: existing.category || 'General',
+    category: existing.category || "General",
     disabilityStatus: existing.disabilityStatus || false,
     isFirstGen: existing.isFirstGen || false,
-    categoryPreferences: existing.categoryPreferences || ['Engineering', 'Merit-cum-Means'],
+    categoryPreferences: existing.categoryPreferences || ["Engineering", "Merit-cum-Means"],
     onboardingCompleted: true,
   });
 
@@ -55,21 +55,21 @@ export const OnboardingPage: React.FC = () => {
   const validateStep = (currentStep: number): boolean => {
     const err: Record<string, string> = {};
     if (currentStep === 1) {
-      if (!profile.fullName.trim()) err.fullName = 'Full legal name is required';
-      if (!profile.state.trim()) err.state = 'State domicile is required';
-      if (!profile.city.trim()) err.city = 'City of residence is required';
+      if (!profile.fullName.trim()) err.fullName = "Full legal name is required";
+      if (!profile.state.trim()) err.state = "State domicile is required";
+      if (!profile.city.trim()) err.city = "City of residence is required";
     } else if (currentStep === 2) {
-      if (!profile.course.trim()) err.course = 'Degree/course title is required';
-      if (!profile.college.trim()) err.college = 'College/Institution name is required';
+      if (!profile.course.trim()) err.course = "Degree/course title is required";
+      if (!profile.college.trim()) err.college = "College/Institution name is required";
       if (profile.percentage <= 0 || profile.percentage > 100) {
-        err.percentage = 'Enter a valid percentage between 1 and 100';
+        err.percentage = "Enter a valid percentage between 1 and 100";
       }
     } else if (currentStep === 3) {
       if (profile.annualFamilyIncome < 0) {
-        err.annualFamilyIncome = 'Enter valid annual family income';
+        err.annualFamilyIncome = "Enter valid annual family income";
       }
       if (profile.estimatedAnnualEducationCost <= 0) {
-        err.estimatedAnnualEducationCost = 'Enter estimated annual education cost';
+        err.estimatedAnnualEducationCost = "Enter estimated annual education cost";
       }
     }
     setErrors(err);
@@ -96,7 +96,7 @@ export const OnboardingPage: React.FC = () => {
       };
       saveStudentProfile(finalProfile);
       await updateProfileData(finalProfile);
-      navigate('/dashboard');
+      navigate("/dashboard");
     }
   };
 
@@ -121,7 +121,8 @@ export const OnboardingPage: React.FC = () => {
             Build Your Scholarship DNA
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            4 quick steps to calibrate deterministic matching, income cutoffs, and AI document validation.
+            4 quick steps to calibrate deterministic matching, income cutoffs, and AI document
+            validation.
           </p>
 
           <button
@@ -137,10 +138,12 @@ export const OnboardingPage: React.FC = () => {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between text-xs font-semibold mb-2">
-            <span className={step >= 1 ? 'text-[#8065FF]' : 'text-slate-500'}>1. Personal</span>
-            <span className={step >= 2 ? 'text-[#8065FF]' : 'text-slate-500'}>2. Academic</span>
-            <span className={step >= 3 ? 'text-[#8065FF]' : 'text-slate-500'}>3. Financial</span>
-            <span className={step >= 4 ? 'text-[#8065FF]' : 'text-slate-500'}>4. Cohort & Goals</span>
+            <span className={step >= 1 ? "text-[#8065FF]" : "text-slate-500"}>1. Personal</span>
+            <span className={step >= 2 ? "text-[#8065FF]" : "text-slate-500"}>2. Academic</span>
+            <span className={step >= 3 ? "text-[#8065FF]" : "text-slate-500"}>3. Financial</span>
+            <span className={step >= 4 ? "text-[#8065FF]" : "text-slate-500"}>
+              4. Cohort & Goals
+            </span>
           </div>
           <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
             <div
@@ -171,7 +174,9 @@ export const OnboardingPage: React.FC = () => {
                   placeholder="e.g. Priya Patel"
                   className="w-full bg-[#080D1B] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#8065FF]"
                 />
-                {errors.fullName && <p className="text-[11px] text-rose-400 mt-1">{errors.fullName}</p>}
+                {errors.fullName && (
+                  <p className="text-[11px] text-rose-400 mt-1">{errors.fullName}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -278,7 +283,9 @@ export const OnboardingPage: React.FC = () => {
                   </label>
                   <select
                     value={profile.academicYear}
-                    onChange={(e) => setProfile({ ...profile, academicYear: parseInt(e.target.value, 10) })}
+                    onChange={(e) =>
+                      setProfile({ ...profile, academicYear: parseInt(e.target.value, 10) })
+                    }
                     className="w-full bg-[#080D1B] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#8065FF]"
                   >
                     <option value={1}>1st Year / Freshman</option>
@@ -314,7 +321,9 @@ export const OnboardingPage: React.FC = () => {
                   placeholder="e.g. National Institute of Technology"
                   className="w-full bg-[#080D1B] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#8065FF]"
                 />
-                {errors.college && <p className="text-[11px] text-rose-400 mt-1">{errors.college}</p>}
+                {errors.college && (
+                  <p className="text-[11px] text-rose-400 mt-1">{errors.college}</p>
+                )}
               </div>
 
               <div>
@@ -337,7 +346,9 @@ export const OnboardingPage: React.FC = () => {
                     Used for minimum cut-off validation in DNA engine (82% = 8.2+ CGPA).
                   </span>
                 </div>
-                {errors.percentage && <p className="text-[11px] text-rose-400 mt-1">{errors.percentage}</p>}
+                {errors.percentage && (
+                  <p className="text-[11px] text-rose-400 mt-1">{errors.percentage}</p>
+                )}
               </div>
             </div>
           )}
@@ -347,7 +358,9 @@ export const OnboardingPage: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-3 border-b border-white/10">
                 <IndianRupee className="w-5 h-5 text-[#27C995]" />
-                <h2 className="font-heading text-base font-bold text-white">Financial Baseline (INR)</h2>
+                <h2 className="font-heading text-base font-bold text-white">
+                  Financial Baseline (INR)
+                </h2>
               </div>
 
               <div>
@@ -355,7 +368,9 @@ export const OnboardingPage: React.FC = () => {
                   Annual Family Income (₹ INR)
                 </label>
                 <div className="relative">
-                  <span className="text-xs text-slate-400 absolute left-3.5 top-2.5 font-bold">₹</span>
+                  <span className="text-xs text-slate-400 absolute left-3.5 top-2.5 font-bold">
+                    ₹
+                  </span>
                   <input
                     type="number"
                     step="10000"
@@ -370,7 +385,8 @@ export const OnboardingPage: React.FC = () => {
                   />
                 </div>
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Current format: ₹{Number(profile.annualFamilyIncome).toLocaleString('en-IN')} / year. (Must match official income certificate).
+                  Current format: ₹{Number(profile.annualFamilyIncome).toLocaleString("en-IN")} /
+                  year. (Must match official income certificate).
                 </p>
                 {errors.annualFamilyIncome && (
                   <p className="text-[11px] text-rose-400 mt-1">{errors.annualFamilyIncome}</p>
@@ -441,7 +457,9 @@ export const OnboardingPage: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-3 border-b border-white/10">
                 <Sparkles className="w-5 h-5 text-amber-400" />
-                <h2 className="font-heading text-base font-bold text-white">Cohort Preferences & Quotas</h2>
+                <h2 className="font-heading text-base font-bold text-white">
+                  Cohort Preferences & Quotas
+                </h2>
               </div>
 
               <div>
@@ -450,7 +468,9 @@ export const OnboardingPage: React.FC = () => {
                 </label>
                 <select
                   value={profile.category}
-                  onChange={(e) => setProfile({ ...profile, category: e.target.value as CategoryType })}
+                  onChange={(e) =>
+                    setProfile({ ...profile, category: e.target.value as CategoryType })
+                  }
                   className="w-full bg-[#080D1B] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#8065FF]"
                 >
                   <option value="General">General / Unreserved</option>
@@ -460,7 +480,8 @@ export const OnboardingPage: React.FC = () => {
                   <option value="ST">ST (Scheduled Tribe)</option>
                 </select>
                 <span className="text-[10px] text-slate-400 mt-1 block">
-                  Unlocks dedicated affirmative action government grants and minority welfare quotas.
+                  Unlocks dedicated affirmative action government grants and minority welfare
+                  quotas.
                 </span>
               </div>
 
@@ -477,7 +498,8 @@ export const OnboardingPage: React.FC = () => {
                       First-Generation College Learner
                     </span>
                     <span className="text-[11px] text-slate-400">
-                      Check if you are the first member in your immediate family to attend university. Unlocks special corporate CSR fellowships.
+                      Check if you are the first member in your immediate family to attend
+                      university. Unlocks special corporate CSR fellowships.
                     </span>
                   </div>
                 </label>

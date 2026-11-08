@@ -1,27 +1,36 @@
-import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from '@/lib/router-compat';
-import { GraduationCap, ArrowRight, Lock, Mail, ShieldCheck, AlertCircle, CheckCircle2, KeyRound } from 'lucide-react';
-import { loginWithEmail, loginWithGoogle, sendPasswordReset } from '../services/firebase';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from "react";
+import { Link, useNavigate, useLocation } from "@/lib/router-compat";
+import {
+  GraduationCap,
+  ArrowRight,
+  Lock,
+  Mail,
+  ShieldCheck,
+  AlertCircle,
+  CheckCircle2,
+  KeyRound,
+} from "lucide-react";
+import { loginWithEmail, loginWithGoogle, sendPasswordReset } from "../services/firebase";
+import { useAuth } from "../context/AuthContext";
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useAuth();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Forgot password modal state
   const [showResetModal, setShowResetModal] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
+  const [resetEmail, setResetEmail] = useState("");
   const [resetStatus, setResetStatus] = useState<{ sent: boolean; message: string } | null>(null);
   const [resetLoading, setResetLoading] = useState(false);
 
-  const redirectPath = (location.state as any)?.from?.pathname || '/dashboard';
+  const redirectPath = (location.state as any)?.from?.pathname || "/dashboard";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,16 +42,21 @@ export const LoginPage: React.FC = () => {
       // Auth listener in AuthContext will detect the user and load their profile
       navigate(redirectPath, { replace: true });
     } catch (err: any) {
-      console.error('Login error:', err);
-      let message = 'Unable to sign in. Please verify your credentials.';
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        message = 'Invalid email or password. Please check your credentials.';
-      } else if (err.code === 'auth/email-not-confirmed') {
-        message = 'Please verify your email first. Check your inbox for the confirmation link.';
-      } else if (err.code === 'auth/too-many-requests') {
-        message = 'Access temporarily disabled due to many failed attempts. Reset your password or try again later.';
-      } else if (err.code === 'auth/network-request-failed') {
-        message = 'Network error. Please check your internet connection.';
+      console.error("Login error:", err);
+      let message = "Unable to sign in. Please verify your credentials.";
+      if (
+        err.code === "auth/invalid-credential" ||
+        err.code === "auth/user-not-found" ||
+        err.code === "auth/wrong-password"
+      ) {
+        message = "Invalid email or password. Please check your credentials.";
+      } else if (err.code === "auth/email-not-confirmed") {
+        message = "Please verify your email first. Check your inbox for the confirmation link.";
+      } else if (err.code === "auth/too-many-requests") {
+        message =
+          "Access temporarily disabled due to many failed attempts. Reset your password or try again later.";
+      } else if (err.code === "auth/network-request-failed") {
+        message = "Network error. Please check your internet connection.";
       }
       setErrorMsg(message);
     } finally {
@@ -57,9 +71,9 @@ export const LoginPage: React.FC = () => {
       const { redirected } = await loginWithGoogle();
       if (!redirected) navigate(redirectPath, { replace: true });
     } catch (err: any) {
-      console.error('Google login error:', err);
-      if (err.code !== 'auth/popup-closed-by-user') {
-        setErrorMsg('Google sign-in could not be completed. Please try again.');
+      console.error("Google login error:", err);
+      if (err.code !== "auth/popup-closed-by-user") {
+        setErrorMsg("Google sign-in could not be completed. Please try again.");
       }
     } finally {
       setGoogleLoading(false);
@@ -78,9 +92,9 @@ export const LoginPage: React.FC = () => {
         message: `Password reset email sent to ${resetEmail}. Check your inbox/spam folder.`,
       });
     } catch (err: any) {
-      let msg = 'Failed to send password reset email. Ensure the email is registered.';
-      if (err.code === 'auth/user-not-found') {
-        msg = 'No student account found with this email address.';
+      let msg = "Failed to send password reset email. Ensure the email is registered.";
+      if (err.code === "auth/user-not-found") {
+        msg = "No student account found with this email address.";
       }
       setResetStatus({ sent: false, message: msg });
     } finally {
@@ -107,7 +121,9 @@ export const LoginPage: React.FC = () => {
             </span>
           </Link>
           <h2 className="font-heading text-xl font-bold text-white">Sign In to GRANTLY</h2>
-          <p className="text-xs text-slate-400 mt-1">Access your scholarship discovery & application center</p>
+          <p className="text-xs text-slate-400 mt-1">
+            Access your scholarship discovery & application center
+          </p>
         </div>
 
         {/* Error message */}
@@ -169,7 +185,7 @@ export const LoginPage: React.FC = () => {
             disabled={loading || googleLoading}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-[#8065FF] to-[#603bfa] hover:brightness-110 text-white font-bold text-xs shadow-lg shadow-[#8065FF]/30 transition flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
           >
-            {loading ? 'Authenticating with Firebase...' : 'Sign In with Email'}
+            {loading ? "Authenticating with Firebase..." : "Sign In with Email"}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
@@ -200,12 +216,12 @@ export const LoginPage: React.FC = () => {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            {googleLoading ? 'Connecting Google Account...' : 'Continue with Google'}
+            {googleLoading ? "Connecting Google Account..." : "Continue with Google"}
           </button>
         </div>
 
         <div className="mt-6 text-center text-xs text-slate-400">
-          New to Grantly?{' '}
+          New to Grantly?{" "}
           <Link to="/signup" className="text-[#8065FF] hover:underline font-semibold">
             Create an account
           </Link>
@@ -229,18 +245,23 @@ export const LoginPage: React.FC = () => {
               <h3 className="font-heading font-bold text-white text-base">Reset Password</h3>
             </div>
             <p className="text-xs text-slate-400 mb-4">
-              Enter your registered student email address. We will send a secure link to reset your password.
+              Enter your registered student email address. We will send a secure link to reset your
+              password.
             </p>
 
             {resetStatus && (
               <div
                 className={`mb-4 p-3 rounded-xl text-xs flex items-center gap-2 ${
                   resetStatus.sent
-                    ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300'
-                    : 'bg-rose-500/10 border border-rose-500/20 text-rose-300'
+                    ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-300"
+                    : "bg-rose-500/10 border border-rose-500/20 text-rose-300"
                 }`}
               >
-                {resetStatus.sent ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+                {resetStatus.sent ? (
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                )}
                 <span>{resetStatus.message}</span>
               </div>
             )}
@@ -267,7 +288,7 @@ export const LoginPage: React.FC = () => {
                   disabled={resetLoading}
                   className="px-4 py-2 rounded-xl bg-[#8065FF] hover:bg-[#6e50f5] text-white text-xs font-semibold"
                 >
-                  {resetLoading ? 'Sending...' : 'Send Reset Link'}
+                  {resetLoading ? "Sending..." : "Send Reset Link"}
                 </button>
               </div>
             </form>

@@ -62,7 +62,13 @@ export function useNavigate() {
       return;
     }
     const { pathname, search, hash } = splitTo(to);
-    navigate({ to: pathname as never, search: search as never, hash, replace: opts?.replace, state: opts?.state as never });
+    navigate({
+      to: pathname as never,
+      search: search as never,
+      hash,
+      replace: opts?.replace,
+      state: opts?.state as never,
+    });
   };
 }
 
@@ -81,7 +87,10 @@ export function useParams<T extends Record<string, string | undefined>>(): T {
   return useTsParams({ strict: false }) as unknown as T;
 }
 
-export function useSearchParams(): [URLSearchParams, (next: Record<string, string> | URLSearchParams) => void] {
+export function useSearchParams(): [
+  URLSearchParams,
+  (next: Record<string, string> | URLSearchParams) => void,
+] {
   const href = useRouterState({ select: (s) => s.location.searchStr });
   const navigate = useTsNavigate();
   const params = new URLSearchParams(href || "");
@@ -93,7 +102,15 @@ export function useSearchParams(): [URLSearchParams, (next: Record<string, strin
   return [params, set];
 }
 
-export function Navigate({ to, replace, state }: { to: string; replace?: boolean; state?: unknown }) {
+export function Navigate({
+  to,
+  replace,
+  state,
+}: {
+  to: string;
+  replace?: boolean;
+  state?: unknown;
+}) {
   const navigate = useNavigate();
   useEffect(() => {
     navigate(to, { replace, state });

@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from '@/lib/router-compat';
-import { GraduationCap, ArrowRight, Lock, Mail, User, ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { registerWithEmail, loginWithGoogle } from '../services/firebase';
+import React, { useState } from "react";
+import { Link, useNavigate } from "@/lib/router-compat";
+import {
+  GraduationCap,
+  ArrowRight,
+  Lock,
+  Mail,
+  User,
+  ShieldCheck,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
+import { registerWithEmail, loginWithGoogle } from "../services/firebase";
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -18,7 +27,7 @@ export const SignupPage: React.FC = () => {
     setErrorMsg(null);
 
     if (password.length < 6) {
-      setErrorMsg('Password must be at least 6 characters long.');
+      setErrorMsg("Password must be at least 6 characters long.");
       return;
     }
 
@@ -29,18 +38,18 @@ export const SignupPage: React.FC = () => {
       setVerificationSent(true);
       if (!needsConfirmation) {
         setTimeout(() => {
-          navigate('/onboarding');
+          navigate("/onboarding");
         }, 1200);
       }
     } catch (err: any) {
-      console.error('Signup error:', err);
-      let message = 'Failed to create student account. Please try again.';
-      if (err.code === 'auth/email-already-in-use') {
-        message = 'This email is already registered. Please sign in instead.';
-      } else if (err.code === 'auth/weak-password') {
-        message = 'The password is too weak. Please use at least 6 characters.';
-      } else if (err.code === 'auth/invalid-email') {
-        message = 'Please provide a valid student email address.';
+      console.error("Signup error:", err);
+      let message = "Failed to create student account. Please try again.";
+      if (err.code === "auth/email-already-in-use") {
+        message = "This email is already registered. Please sign in instead.";
+      } else if (err.code === "auth/weak-password") {
+        message = "The password is too weak. Please use at least 6 characters.";
+      } else if (err.code === "auth/invalid-email") {
+        message = "Please provide a valid student email address.";
       }
       setErrorMsg(message);
     } finally {
@@ -53,11 +62,11 @@ export const SignupPage: React.FC = () => {
     setGoogleLoading(true);
     try {
       const { redirected } = await loginWithGoogle();
-      if (!redirected) navigate('/onboarding');
+      if (!redirected) navigate("/onboarding");
     } catch (err: any) {
-      console.error('Google signup error:', err);
-      if (err.code !== 'auth/popup-closed-by-user') {
-        setErrorMsg('Google sign-up could not be completed. Please try again.');
+      console.error("Google signup error:", err);
+      if (err.code !== "auth/popup-closed-by-user") {
+        setErrorMsg("Google sign-up could not be completed. Please try again.");
       }
     } finally {
       setGoogleLoading(false);
@@ -82,7 +91,9 @@ export const SignupPage: React.FC = () => {
             </span>
           </Link>
           <h2 className="font-heading text-xl font-bold text-white">Create Student Account</h2>
-          <p className="text-xs text-slate-400 mt-1">Unlock AI scholarship discovery tailored to your goals</p>
+          <p className="text-xs text-slate-400 mt-1">
+            Unlock AI scholarship discovery tailored to your goals
+          </p>
         </div>
 
         {errorMsg && (
@@ -95,7 +106,10 @@ export const SignupPage: React.FC = () => {
         {verificationSent && (
           <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>Account created! Check your inbox and click the verification link to activate your account.</span>
+            <span>
+              Account created! Check your inbox and click the verification link to activate your
+              account.
+            </span>
           </div>
         )}
 
@@ -157,7 +171,7 @@ export const SignupPage: React.FC = () => {
             disabled={loading || googleLoading}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-[#8065FF] to-[#603bfa] hover:brightness-110 text-white font-bold text-xs shadow-lg shadow-[#8065FF]/30 transition flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
           >
-            {loading ? 'Creating Firebase Account...' : 'Continue to Profile Setup'}
+            {loading ? "Creating Firebase Account..." : "Continue to Profile Setup"}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
@@ -188,12 +202,12 @@ export const SignupPage: React.FC = () => {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            {googleLoading ? 'Connecting Google Account...' : 'Sign up with Google'}
+            {googleLoading ? "Connecting Google Account..." : "Sign up with Google"}
           </button>
         </div>
 
         <div className="mt-6 text-center text-xs text-slate-400">
-          Already registered?{' '}
+          Already registered?{" "}
           <Link to="/login" className="text-[#8065FF] hover:underline font-semibold">
             Sign in
           </Link>

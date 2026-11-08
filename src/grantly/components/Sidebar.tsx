@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink, Link, useNavigate } from '@/lib/router-compat';
+import React from "react";
+import { NavLink, Link, useNavigate } from "@/lib/router-compat";
 import {
   LayoutDashboard,
   Dna,
@@ -13,12 +13,9 @@ import {
   UserPlus,
   LogOut,
   AlertCircle,
-} from 'lucide-react';
-import {
-  getDocuments,
-  calculateDocumentReadiness,
-} from '../services/storageService';
-import { useAuth } from '../context/AuthContext';
+} from "lucide-react";
+import { getDocuments, calculateDocumentReadiness } from "../services/storageService";
+import { useAuth } from "../context/AuthContext";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -31,30 +28,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const docs = getDocuments();
   const readiness = calculateDocumentReadiness(docs);
 
-  const displayName = profile?.fullName || user?.displayName || user?.email?.split('@')[0] || '';
+  const displayName = profile?.fullName || user?.displayName || user?.email?.split("@")[0] || "";
   const initials = displayName
     ? displayName
-        .split(' ')
+        .split(" ")
         .filter(Boolean)
         .slice(0, 2)
         .map((n) => n[0].toUpperCase())
-        .join('')
-    : 'ST';
+        .join("")
+    : "ST";
 
   const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'DNA Matcher', path: '/matcher', icon: Dna, badge: 'AI Engine' },
-    { name: 'Scholarship Explorer', path: '/scholarships', icon: Compass },
-    { name: 'Document Center', path: '/documents', icon: FileCheck, badge: `${readiness.overallScore}%` },
-    { name: 'Grantly Copilot', path: '/copilot', icon: Bot, badge: 'Live AI' },
-    { name: 'Application Tracker', path: '/applications', icon: Kanban },
-    { name: 'Student Profile', path: '/profile', icon: User },
+    { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+    { name: "DNA Matcher", path: "/matcher", icon: Dna, badge: "AI Engine" },
+    { name: "Scholarship Explorer", path: "/scholarships", icon: Compass },
+    {
+      name: "Document Center",
+      path: "/documents",
+      icon: FileCheck,
+      badge: `${readiness.overallScore}%`,
+    },
+    { name: "Grantly Copilot", path: "/copilot", icon: Bot, badge: "Live AI" },
+    { name: "Application Tracker", path: "/applications", icon: Kanban },
+    { name: "Student Profile", path: "/profile", icon: User },
   ];
 
   const handleLogout = async () => {
     if (onClose) onClose();
     await logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
@@ -70,7 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       {/* Sidebar Container */}
       <aside
         className={`fixed top-16 bottom-0 left-0 z-40 w-64 glass-panel border-r border-white/[0.08] flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 bg-[#080D1B]/95 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Navigation list */}
@@ -89,15 +91,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 className={({ isActive }) =>
                   `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all relative ${
                     isActive
-                      ? 'bg-gradient-to-r from-[#8065FF] to-[#603bfa] text-white shadow-lg shadow-[#8065FF]/25 font-bold'
-                      : 'text-slate-300 hover:text-white hover:bg-white/[0.04]'
+                      ? "bg-gradient-to-r from-[#8065FF] to-[#603bfa] text-white shadow-lg shadow-[#8065FF]/25 font-bold"
+                      : "text-slate-300 hover:text-white hover:bg-white/[0.04]"
                   }`
                 }
               >
                 {({ isActive }) => (
                   <>
                     <div className="flex items-center gap-3">
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#42D9F5]' : ''}`} />
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-[#42D9F5]" : ""}`} />
                       <span>{item.name}</span>
                     </div>
                     {item.badge && (
@@ -138,14 +140,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="p-4 border-t border-white/[0.08] bg-[#080D1B]/90">
           {user ? (
             <div className="space-y-2">
-              <Link to="/profile" onClick={onClose} className="flex items-center justify-between group">
+              <Link
+                to="/profile"
+                onClick={onClose}
+                className="flex items-center justify-between group"
+              >
                 <div className="flex items-center gap-2.5 overflow-hidden">
                   <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#8065FF] to-[#42D9F5] flex items-center justify-center text-xs font-bold text-white shadow-md shrink-0">
                     {initials}
                   </div>
                   <div className="overflow-hidden">
                     <p className="text-xs font-bold text-white truncate group-hover:text-[#42D9F5] transition">
-                      {displayName || 'Student User'}
+                      {displayName || "Student User"}
                     </p>
                     <p className="text-[10px] text-slate-400 truncate font-mono">
                       {profile?.course || user.email}
@@ -153,7 +159,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   </div>
                 </div>
                 <span className="p-1 rounded-lg bg-emerald-500/10 text-[#27C995] border border-emerald-500/20 text-[9px] font-bold px-1.5 py-0.5 shrink-0">
-                  {emailVerified ? 'VERIFIED' : 'ACTIVE'}
+                  {emailVerified ? "VERIFIED" : "ACTIVE"}
                 </span>
               </Link>
 
@@ -185,9 +191,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-white/5">
             <span className="flex items-center gap-1 text-[10px]">
               <ShieldCheck className="w-3.5 h-3.5 text-[#27C995]" />
-              {isFirestoreOnline ? 'Cloud Online' : 'Connecting...'}
+              {isFirestoreOnline ? "Database Online" : "Connecting..."}
             </span>
-            <span className="text-[10px] text-slate-400 font-mono">Lovable Cloud</span>
+            <span className="text-[10px] text-slate-400 font-mono">Supabase DB</span>
           </div>
         </div>
       </aside>

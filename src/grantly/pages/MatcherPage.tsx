@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Link } from '@/lib/router-compat';
+import React, { useState, useMemo, useEffect } from "react";
+import { Link } from "@/lib/router-compat";
 import {
   Dna,
   Sparkles,
@@ -18,28 +18,29 @@ import {
   UserCheck,
   FileText,
   Filter,
-} from 'lucide-react';
-import confetti from 'canvas-confetti';
+} from "lucide-react";
+import confetti from "canvas-confetti";
 import {
   getStudentProfile,
   saveStudentProfile,
   getSavedScholarshipIds,
   toggleSaveScholarship,
-} from '../services/storageService';
-import { calculateMatchScore } from '../utils/matchingEngine';
-import { ScholarshipCard } from '../components/ScholarshipCard';
-import { TrustGuardModal } from '../components/TrustGuardModal';
-import { AiMatchScanModal } from '../components/AiMatchScanModal';
-import { AnimatedCounter } from '../components/AnimatedCounter';
-import { StudentProfile, CategoryType, MatchResult, Scholarship } from '../types';
-import { useAuth } from '../context/AuthContext';
+} from "../services/storageService";
+import { calculateMatchScore } from "../utils/matchingEngine";
+import { DEMO_SCHOLARSHIPS } from "../data/scholarships";
+import { ScholarshipCard } from "../components/ScholarshipCard";
+import { TrustGuardModal } from "../components/TrustGuardModal";
+import { AiMatchScanModal } from "../components/AiMatchScanModal";
+import { AnimatedCounter } from "../components/AnimatedCounter";
+import { StudentProfile, CategoryType, MatchResult, Scholarship } from "../types";
+import { useAuth } from "../context/AuthContext";
 import {
   saveScholarshipForUser,
   removeSavedScholarshipForUser,
   readSavedScholarshipsForUser,
   fetchScholarships,
-} from '../services/firestoreService';
-import { scholarshipDocumentToModel } from '../types/firestore';
+} from "../services/firestoreService";
+import { scholarshipDocumentToModel } from "../types/firestore";
 
 export const MatcherPage: React.FC = () => {
   const { user, profile: authProfile } = useAuth();
@@ -50,16 +51,18 @@ export const MatcherPage: React.FC = () => {
   const [scanModalOpen, setScanModalOpen] = useState(false);
   const [inspectingTrustGuard, setInspectingTrustGuard] = useState<Scholarship | null>(null);
 
-  const [verifiedScholarships, setVerifiedScholarships] = useState<Scholarship[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [verifiedScholarships, setVerifiedScholarships] =
+    useState<Scholarship[]>(DEMO_SCHOLARSHIPS);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Status Filter Tab: ALL, ELIGIBLE, NEEDS_REVIEW, INELIGIBLE
-  const [statusTab, setStatusTab] = useState<'ALL' | 'ELIGIBLE' | 'NEEDS_REVIEW' | 'INELIGIBLE'>('ALL');
+  const [statusTab, setStatusTab] = useState<"ALL" | "ELIGIBLE" | "NEEDS_REVIEW" | "INELIGIBLE">(
+    "ALL",
+  );
 
   // Fetch scholarships from Firestore
   useEffect(() => {
     let isMounted = true;
-    setIsLoading(true);
     fetchScholarships()
       .then((docs) => {
         if (!isMounted) return;
@@ -68,12 +71,12 @@ export const MatcherPage: React.FC = () => {
           // Ingest verified schemes for deterministic evaluation
           setVerifiedScholarships(models);
         } else {
-          setVerifiedScholarships([]);
+          setVerifiedScholarships(DEMO_SCHOLARSHIPS);
         }
       })
       .catch((err) => {
-        console.warn('[MatcherPage Firestore Fetch Warning]', err);
-        setVerifiedScholarships([]);
+        console.warn("[MatcherPage Firestore Fetch Warning]", err);
+        setVerifiedScholarships(DEMO_SCHOLARSHIPS);
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -100,47 +103,54 @@ export const MatcherPage: React.FC = () => {
 
   // Real-time recalculation of matches as sliders change
   const matchResults: MatchResult[] = useMemo(() => {
-    return verifiedScholarships.map((s) => calculateMatchScore(profile, s)).sort((a, b) => {
-      // Priority 1: ELIGIBLE first, then NEEDS_REVIEW, then INELIGIBLE
-      const rankVal = (item: MatchResult) => {
-        if (item.eligibilityStatus === 'ELIGIBLE' || item.status === 'Eligible') return 3;
-        if (item.eligibilityStatus === 'NEEDS_REVIEW' || item.status === 'Borderline') return 2;
-        return 1;
-      };
-      const diff = rankVal(b) - rankVal(a);
-      if (diff !== 0) return diff;
-      if (a.score !== b.score) return b.score - a.score;
-      return a.scholarship.daysLeft - b.scholarship.daysLeft;
-    });
+    return verifiedScholarships
+      .map((s) => calculateMatchScore(profile, s))
+      .sort((a, b) => {
+        // Priority 1: ELIGIBLE first, then NEEDS_REVIEW, then INELIGIBLE
+        const rankVal = (item: MatchResult) => {
+          if (item.eligibilityStatus === "ELIGIBLE" || item.status === "Eligible") return 3;
+          if (item.eligibilityStatus === "NEEDS_REVIEW" || item.status === "Borderline") return 2;
+          return 1;
+        };
+        const diff = rankVal(b) - rankVal(a);
+        if (diff !== 0) return diff;
+        if (a.score !== b.score) return b.score - a.score;
+        return a.scholarship.daysLeft - b.scholarship.daysLeft;
+      });
   }, [profile, verifiedScholarships]);
 
   const eligibleCount = matchResults.filter(
-    (m) => m.eligibilityStatus === 'ELIGIBLE' || (m.status === 'Eligible' && !m.mandatoryFailed)
+    (m) => m.eligibilityStatus === "ELIGIBLE" || (m.status === "Eligible" && !m.mandatoryFailed),
   ).length;
 
   const needsReviewCount = matchResults.filter(
-    (m) => m.eligibilityStatus === 'NEEDS_REVIEW' || (m.status === 'Borderline' && !m.mandatoryFailed)
+    (m) =>
+      m.eligibilityStatus === "NEEDS_REVIEW" || (m.status === "Borderline" && !m.mandatoryFailed),
   ).length;
 
   const ineligibleCount = matchResults.filter(
-    (m) => m.eligibilityStatus === 'INELIGIBLE' || m.mandatoryFailed || m.status === 'Ineligible'
+    (m) => m.eligibilityStatus === "INELIGIBLE" || m.mandatoryFailed || m.status === "Ineligible",
   ).length;
 
   // Filtered match results by tab
   const displayedMatches = useMemo(() => {
-    if (statusTab === 'ELIGIBLE') {
+    if (statusTab === "ELIGIBLE") {
       return matchResults.filter(
-        (m) => m.eligibilityStatus === 'ELIGIBLE' || (m.status === 'Eligible' && !m.mandatoryFailed)
+        (m) =>
+          m.eligibilityStatus === "ELIGIBLE" || (m.status === "Eligible" && !m.mandatoryFailed),
       );
     }
-    if (statusTab === 'NEEDS_REVIEW') {
+    if (statusTab === "NEEDS_REVIEW") {
       return matchResults.filter(
-        (m) => m.eligibilityStatus === 'NEEDS_REVIEW' || (m.status === 'Borderline' && !m.mandatoryFailed)
+        (m) =>
+          m.eligibilityStatus === "NEEDS_REVIEW" ||
+          (m.status === "Borderline" && !m.mandatoryFailed),
       );
     }
-    if (statusTab === 'INELIGIBLE') {
+    if (statusTab === "INELIGIBLE") {
       return matchResults.filter(
-        (m) => m.eligibilityStatus === 'INELIGIBLE' || m.mandatoryFailed || m.status === 'Ineligible'
+        (m) =>
+          m.eligibilityStatus === "INELIGIBLE" || m.mandatoryFailed || m.status === "Ineligible",
       );
     }
     return matchResults;
@@ -157,7 +167,7 @@ export const MatcherPage: React.FC = () => {
       particleCount: 80,
       spread: 70,
       origin: { y: 0.6 },
-      colors: ['#8065FF', '#42D9F5', '#27C995'],
+      colors: ["#8065FF", "#42D9F5", "#27C995"],
     });
   };
 
@@ -189,16 +199,20 @@ export const MatcherPage: React.FC = () => {
   // Detect missing student profile fields
   const missingFields: string[] = [];
   if (profile.percentage === undefined || profile.percentage === null || profile.percentage === 0) {
-    missingFields.push('Qualifying Academic Marks');
+    missingFields.push("Qualifying Academic Marks");
   }
-  if (profile.annualFamilyIncome === undefined || profile.annualFamilyIncome === null || profile.annualFamilyIncome === 0) {
-    missingFields.push('Annual Family Income');
+  if (
+    profile.annualFamilyIncome === undefined ||
+    profile.annualFamilyIncome === null ||
+    profile.annualFamilyIncome === 0
+  ) {
+    missingFields.push("Annual Family Income");
   }
   if (!profile.course || profile.course.trim().length === 0) {
-    missingFields.push('Degree Course Stream');
+    missingFields.push("Degree Course Stream");
   }
   if (!profile.state || profile.state.trim().length === 0) {
-    missingFields.push('State Domicile');
+    missingFields.push("State Domicile");
   }
 
   return (
@@ -213,7 +227,9 @@ export const MatcherPage: React.FC = () => {
                 Incomplete Profile Information ({missingFields.length} fields missing)
               </h4>
               <p className="text-amber-300/80 mt-0.5 leading-relaxed">
-                Missing: <strong className="text-white">{missingFields.join(', ')}</strong>. The deterministic engine requires these fields for verified decisions; incomplete profiles generate "Needs Review".
+                Missing: <strong className="text-white">{missingFields.join(", ")}</strong>. The
+                deterministic engine requires these fields for verified decisions; incomplete
+                profiles generate "Needs Review".
               </p>
             </div>
           </div>
@@ -241,7 +257,8 @@ export const MatcherPage: React.FC = () => {
             Eligibility DNA Decision Engine
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Strict structured evaluation across Academic Marks, Income Limits, Degree Stream, Domicile, and Deadline status.
+            Strict structured evaluation across Academic Marks, Income Limits, Degree Stream,
+            Domicile, and Deadline status.
           </p>
         </div>
 
@@ -302,7 +319,7 @@ export const MatcherPage: React.FC = () => {
               max="99"
               step="1"
               value={profile.percentage || 50}
-              onChange={(e) => handleSliderChange('percentage', parseFloat(e.target.value))}
+              onChange={(e) => handleSliderChange("percentage", parseFloat(e.target.value))}
               className="w-full accent-[#8065FF] cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-slate-500 font-mono">
@@ -320,7 +337,7 @@ export const MatcherPage: React.FC = () => {
                 Family Income
               </span>
               <span className="font-mono font-bold text-[#27C995] text-sm">
-                ₹{Number(profile.annualFamilyIncome || 0).toLocaleString('en-IN')}
+                ₹{Number(profile.annualFamilyIncome || 0).toLocaleString("en-IN")}
               </span>
             </div>
             <input
@@ -329,7 +346,7 @@ export const MatcherPage: React.FC = () => {
               max="1000000"
               step="25000"
               value={profile.annualFamilyIncome || 200000}
-              onChange={(e) => handleSliderChange('annualFamilyIncome', parseFloat(e.target.value))}
+              onChange={(e) => handleSliderChange("annualFamilyIncome", parseFloat(e.target.value))}
               className="w-full accent-[#27C995] cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-slate-500 font-mono">
@@ -346,8 +363,8 @@ export const MatcherPage: React.FC = () => {
               State Domicile
             </label>
             <select
-              value={profile.state || 'Jharkhand'}
-              onChange={(e) => handleSliderChange('state', e.target.value)}
+              value={profile.state || "Jharkhand"}
+              onChange={(e) => handleSliderChange("state", e.target.value)}
               className="w-full bg-[#080D1B] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#8065FF]"
             >
               <option value="Jharkhand">Jharkhand</option>
@@ -368,8 +385,8 @@ export const MatcherPage: React.FC = () => {
               Social Category
             </label>
             <select
-              value={profile.category || 'OBC'}
-              onChange={(e) => handleSliderChange('category', e.target.value as CategoryType)}
+              value={profile.category || "OBC"}
+              onChange={(e) => handleSliderChange("category", e.target.value as CategoryType)}
               className="w-full bg-[#080D1B] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#8065FF]"
             >
               <option value="OBC">OBC (Other Backward Class)</option>
@@ -386,9 +403,11 @@ export const MatcherPage: React.FC = () => {
         <div className="mt-6 pt-4 border-t border-white/5 flex flex-wrap items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setStatusTab('ELIGIBLE')}
+              onClick={() => setStatusTab("ELIGIBLE")}
               className={`flex items-center gap-1.5 font-semibold px-2.5 py-1 rounded-lg transition ${
-                statusTab === 'ELIGIBLE' ? 'bg-[#27C995]/20 text-[#27C995] border border-[#27C995]/30' : 'text-[#27C995] hover:bg-white/5'
+                statusTab === "ELIGIBLE"
+                  ? "bg-[#27C995]/20 text-[#27C995] border border-[#27C995]/30"
+                  : "text-[#27C995] hover:bg-white/5"
               }`}
             >
               <CheckCircle2 className="w-4 h-4" />
@@ -396,9 +415,11 @@ export const MatcherPage: React.FC = () => {
             </button>
             <span className="text-slate-600">•</span>
             <button
-              onClick={() => setStatusTab('NEEDS_REVIEW')}
+              onClick={() => setStatusTab("NEEDS_REVIEW")}
               className={`flex items-center gap-1.5 font-semibold px-2.5 py-1 rounded-lg transition ${
-                statusTab === 'NEEDS_REVIEW' ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' : 'text-amber-400 hover:bg-white/5'
+                statusTab === "NEEDS_REVIEW"
+                  ? "bg-amber-400/20 text-amber-300 border border-amber-400/30"
+                  : "text-amber-400 hover:bg-white/5"
               }`}
             >
               <AlertCircle className="w-4 h-4" />
@@ -406,9 +427,11 @@ export const MatcherPage: React.FC = () => {
             </button>
             <span className="text-slate-600">•</span>
             <button
-              onClick={() => setStatusTab('INELIGIBLE')}
+              onClick={() => setStatusTab("INELIGIBLE")}
               className={`flex items-center gap-1.5 font-semibold px-2.5 py-1 rounded-lg transition ${
-                statusTab === 'INELIGIBLE' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'text-rose-400 hover:bg-white/5'
+                statusTab === "INELIGIBLE"
+                  ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                  : "text-rose-400 hover:bg-white/5"
               }`}
             >
               <XCircle className="w-4 h-4" />
@@ -426,41 +449,41 @@ export const MatcherPage: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
         <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => setStatusTab('ALL')}
+            onClick={() => setStatusTab("ALL")}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
-              statusTab === 'ALL'
-                ? 'bg-[#8065FF] text-white shadow-md shadow-[#8065FF]/20'
-                : 'bg-white/5 text-slate-400 hover:text-white'
+              statusTab === "ALL"
+                ? "bg-[#8065FF] text-white shadow-md shadow-[#8065FF]/20"
+                : "bg-white/5 text-slate-400 hover:text-white"
             }`}
           >
             All Evaluated ({matchResults.length})
           </button>
           <button
-            onClick={() => setStatusTab('ELIGIBLE')}
+            onClick={() => setStatusTab("ELIGIBLE")}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
-              statusTab === 'ELIGIBLE'
-                ? 'bg-[#27C995] text-slate-950 font-bold'
-                : 'bg-white/5 text-slate-400 hover:text-white'
+              statusTab === "ELIGIBLE"
+                ? "bg-[#27C995] text-slate-950 font-bold"
+                : "bg-white/5 text-slate-400 hover:text-white"
             }`}
           >
             Eligible Only ({eligibleCount})
           </button>
           <button
-            onClick={() => setStatusTab('NEEDS_REVIEW')}
+            onClick={() => setStatusTab("NEEDS_REVIEW")}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
-              statusTab === 'NEEDS_REVIEW'
-                ? 'bg-amber-400 text-slate-950 font-bold'
-                : 'bg-white/5 text-slate-400 hover:text-white'
+              statusTab === "NEEDS_REVIEW"
+                ? "bg-amber-400 text-slate-950 font-bold"
+                : "bg-white/5 text-slate-400 hover:text-white"
             }`}
           >
             Needs Review ({needsReviewCount})
           </button>
           <button
-            onClick={() => setStatusTab('INELIGIBLE')}
+            onClick={() => setStatusTab("INELIGIBLE")}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
-              statusTab === 'INELIGIBLE'
-                ? 'bg-rose-500 text-white font-bold'
-                : 'bg-white/5 text-slate-400 hover:text-white'
+              statusTab === "INELIGIBLE"
+                ? "bg-rose-500 text-white font-bold"
+                : "bg-white/5 text-slate-400 hover:text-white"
             }`}
           >
             Ineligible ({ineligibleCount})
@@ -468,7 +491,8 @@ export const MatcherPage: React.FC = () => {
         </div>
 
         <span className="text-xs text-slate-400">
-          Showing <strong className="text-white">{displayedMatches.length}</strong> of {matchResults.length} schemes
+          Showing <strong className="text-white">{displayedMatches.length}</strong> of{" "}
+          {matchResults.length} schemes
         </span>
       </div>
 
@@ -477,7 +501,10 @@ export const MatcherPage: React.FC = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[1, 2].map((i) => (
-              <div key={i} className="glass-card rounded-3xl p-6 border border-white/10 animate-pulse space-y-3">
+              <div
+                key={i}
+                className="glass-card rounded-3xl p-6 border border-white/10 animate-pulse space-y-3"
+              >
                 <div className="h-4 bg-white/10 rounded w-1/4" />
                 <div className="h-6 bg-white/10 rounded w-3/4" />
                 <div className="h-10 bg-white/5 rounded w-full" />
@@ -488,17 +515,25 @@ export const MatcherPage: React.FC = () => {
           <div className="glass-panel rounded-3xl p-10 text-center border border-white/10">
             <ShieldCheck className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
             <h4 className="font-heading text-base font-bold text-white">
-              No Scholarships in "{statusTab === 'ALL' ? 'Evaluated' : statusTab === 'ELIGIBLE' ? 'Eligible' : statusTab === 'NEEDS_REVIEW' ? 'Needs Review' : 'Ineligible'}"
+              No Scholarships in "
+              {statusTab === "ALL"
+                ? "Evaluated"
+                : statusTab === "ELIGIBLE"
+                  ? "Eligible"
+                  : statusTab === "NEEDS_REVIEW"
+                    ? "Needs Review"
+                    : "Ineligible"}
+              "
             </h4>
             <p className="text-xs text-slate-400 max-w-md mx-auto mt-1 mb-4 leading-relaxed">
-              {statusTab === 'ELIGIBLE'
-                ? 'Your current qualifying marks or income ceiling do not meet the minimum criteria for any scheme in this category. Try tuning the sandbox sliders or review the Ineligible tab for details.'
-                : statusTab === 'NEEDS_REVIEW'
-                ? 'No schemes require review; your profile data is complete for the active evaluation.'
-                : 'Try clearing the filter tabs to explore the full catalog.'}
+              {statusTab === "ELIGIBLE"
+                ? "Your current qualifying marks or income ceiling do not meet the minimum criteria for any scheme in this category. Try tuning the sandbox sliders or review the Ineligible tab for details."
+                : statusTab === "NEEDS_REVIEW"
+                  ? "No schemes require review; your profile data is complete for the active evaluation."
+                  : "Try clearing the filter tabs to explore the full catalog."}
             </p>
             <button
-              onClick={() => setStatusTab('ALL')}
+              onClick={() => setStatusTab("ALL")}
               className="px-4 py-2 rounded-xl bg-[#8065FF] text-white text-xs font-semibold hover:bg-[#6c48ff] transition"
             >
               Show All Schemes
@@ -529,10 +564,7 @@ export const MatcherPage: React.FC = () => {
       )}
 
       {/* Signature AI Match Scan Modal */}
-      <AiMatchScanModal
-        isOpen={scanModalOpen}
-        onClose={() => setScanModalOpen(false)}
-      />
+      <AiMatchScanModal isOpen={scanModalOpen} onClose={() => setScanModalOpen(false)} />
     </div>
   );
 };

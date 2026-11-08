@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Search,
   Filter,
@@ -15,17 +15,17 @@ import {
   Clock,
   Archive,
   RefreshCw,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   getStudentProfile,
   getSavedScholarshipIds,
   toggleSaveScholarship,
-} from '../services/storageService';
-import { rankScholarshipsForStudent } from '../utils/matchingEngine';
-import { TrustGuardModal } from '../components/TrustGuardModal';
-import { ScholarshipCard } from '../components/ScholarshipCard';
-import { Scholarship, VerificationStatus } from '../types';
-import { useAuth } from '../context/AuthContext';
+} from "../services/storageService";
+import { rankScholarshipsForStudent } from "../utils/matchingEngine";
+import { TrustGuardModal } from "../components/TrustGuardModal";
+import { ScholarshipCard } from "../components/ScholarshipCard";
+import { Scholarship, VerificationStatus } from "../types";
+import { useAuth } from "../context/AuthContext";
 import {
   fetchScholarships,
   createScholarshipRecord,
@@ -33,13 +33,13 @@ import {
   saveScholarshipForUser,
   removeSavedScholarshipForUser,
   readSavedScholarshipsForUser,
-} from '../services/firestoreService';
+} from "../services/firestoreService";
 import {
   ScholarshipDocument,
   scholarshipDocumentToModel,
   validateScholarshipDocument,
-} from '../types/firestore';
-import { OFFICIAL_SCHOLARSHIPS } from '../data/scholarships';
+} from "../types/firestore";
+import { OFFICIAL_SCHOLARSHIPS } from "../data/scholarships";
 
 export const ScholarshipsPage: React.FC = () => {
   const { user, profile: authProfile } = useAuth();
@@ -47,43 +47,50 @@ export const ScholarshipsPage: React.FC = () => {
   const { isAdmin } = useAuth();
 
   const [savedSet, setSavedSet] = useState<Set<string>>(new Set(getSavedScholarshipIds()));
-  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [scholarships, setScholarships] = useState<Scholarship[]>(OFFICIAL_SCHOLARSHIPS);
+  const [isLoading, setIsLoading] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
 
   // Filters state
-  const [verificationFilterTab, setVerificationFilterTab] = useState<'ALL' | 'VERIFIED' | 'PENDING_VERIFICATION' | 'EXPIRED_OR_CLOSED'>('ALL');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState<string>('All');
-  const [selectedState, setSelectedState] = useState<string>('All');
-  const [selectedFitStatus, setSelectedFitStatus] = useState<string>('All');
+  const [verificationFilterTab, setVerificationFilterTab] = useState<
+    "ALL" | "VERIFIED" | "PENDING_VERIFICATION" | "EXPIRED_OR_CLOSED"
+  >("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLevel, setSelectedLevel] = useState<string>("All");
+  const [selectedState, setSelectedState] = useState<string>("All");
+  const [selectedFitStatus, setSelectedFitStatus] = useState<string>("All");
   const [maxIncomeFilter, setMaxIncomeFilter] = useState<number>(1000000);
   const [minAwardFilter, setMinAwardFilter] = useState<number>(0);
-  const [sortBy, setSortBy] = useState<'relevance' | 'award_high' | 'award_low' | 'deadline'>('relevance');
+  const [sortBy, setSortBy] = useState<"relevance" | "award_high" | "award_low" | "deadline">(
+    "relevance",
+  );
 
   // Modals state
   const [inspectingTrustGuard, setInspectingTrustGuard] = useState<Scholarship | null>(null);
   const [adminModalOpen, setAdminModalOpen] = useState(false);
-  const [adminToast, setAdminToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [adminToast, setAdminToast] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // Admin New Scholarship Form State
   const [newScheme, setNewScheme] = useState<Partial<ScholarshipDocument>>({
-    id: '',
-    name: '',
-    provider: '',
-    description: '',
+    id: "",
+    name: "",
+    provider: "",
+    description: "",
     awardAmount: 50000,
-    currency: 'INR',
-    educationLevel: 'Undergraduate',
-    eligibleCourses: ['Engineering', 'All'],
-    eligibleStates: ['All India'],
+    currency: "INR",
+    educationLevel: "Undergraduate",
+    eligibleCourses: ["Engineering", "All"],
+    eligibleStates: ["All India"],
     minimumMarks: 60,
     maximumFamilyIncome: 250000,
-    requiredDocuments: ['Marksheet', 'Income Certificate', 'Bonafide Certificate', 'Aadhaar Card'],
-    deadline: '2026-12-31',
-    officialSourceUrl: 'https://scholarships.gov.in/',
-    verificationStatus: 'VERIFIED',
-    academicYear: '2025-26',
+    requiredDocuments: ["Marksheet", "Income Certificate", "Bonafide Certificate", "Aadhaar Card"],
+    deadline: "2026-12-31",
+    officialSourceUrl: "https://scholarships.gov.in/",
+    verificationStatus: "VERIFIED",
+    academicYear: "2025-26",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -98,14 +105,16 @@ export const ScholarshipsPage: React.FC = () => {
         const models = docs.map(scholarshipDocumentToModel);
         setScholarships(models);
       } else {
-        // If Firestore collection is empty, handle empty state gracefully without crash
-        setScholarships([]);
+        // If Firestore collection is empty, retain official catalog
+        setScholarships(OFFICIAL_SCHOLARSHIPS);
       }
     } catch (err: any) {
-      console.warn('[Firestore Fetch Warning]', err);
-      setDbError('Notice: Could not sync live scholarship catalog from cloud database. Please verify connection.');
+      console.warn("[Firestore Fetch Warning]", err);
+      setDbError(
+        "Notice: Could not sync live scholarship catalog from cloud database. Using official catalog.",
+      );
       // Empty state resilience
-      setScholarships([]);
+      setScholarships(OFFICIAL_SCHOLARSHIPS);
     } finally {
       setIsLoading(false);
     }
@@ -154,68 +163,71 @@ export const ScholarshipsPage: React.FC = () => {
 
   // Filtered and sorted matches
   const filteredMatches = useMemo(() => {
-    return allMatches.filter((m) => {
-      const s = m.scholarship;
+    return allMatches
+      .filter((m) => {
+        const s = m.scholarship;
 
-      // Verification Tab Filter
-      if (verificationFilterTab !== 'ALL' && s.verificationStatus !== verificationFilterTab) {
-        return false;
-      }
-
-      // Search Query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesName = s.name.toLowerCase().includes(q);
-        const matchesProvider = s.provider.toLowerCase().includes(q);
-        const matchesCourse = s.eligibleCourses.some((c) => c.toLowerCase().includes(q));
-        const matchesTag = s.tags.some((t) => t.toLowerCase().includes(q));
-        if (!matchesName && !matchesProvider && !matchesCourse && !matchesTag) {
+        // Verification Tab Filter
+        if (verificationFilterTab !== "ALL" && s.verificationStatus !== verificationFilterTab) {
           return false;
         }
-      }
 
-      // Education Level
-      if (selectedLevel !== 'All') {
-        if (!s.educationLevels.includes('All') && !s.educationLevels.includes(selectedLevel)) {
-          return false;
+        // Search Query
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const matchesName = s.name.toLowerCase().includes(q);
+          const matchesProvider = s.provider.toLowerCase().includes(q);
+          const matchesCourse = s.eligibleCourses.some((c) => c.toLowerCase().includes(q));
+          const matchesTag = s.tags.some((t) => t.toLowerCase().includes(q));
+          if (!matchesName && !matchesProvider && !matchesCourse && !matchesTag) {
+            return false;
+          }
         }
-      }
 
-      // State Domicile
-      if (selectedState !== 'All') {
-        const isAllIndia = s.eligibleStates.includes('All India') || s.eligibleStates.includes('All');
-        if (!isAllIndia && !s.eligibleStates.includes(selectedState)) {
-          return false;
+        // Education Level
+        if (selectedLevel !== "All") {
+          if (!s.educationLevels.includes("All") && !s.educationLevels.includes(selectedLevel)) {
+            return false;
+          }
         }
-      }
 
-      // Fit Status
-      if (selectedFitStatus === 'Eligible' && m.status !== 'Eligible') return false;
-      if (selectedFitStatus === 'Borderline' && m.status !== 'Borderline') return false;
-      if (selectedFitStatus === 'Saved' && !savedSet.has(s.id)) return false;
+        // State Domicile
+        if (selectedState !== "All") {
+          const isAllIndia =
+            s.eligibleStates.includes("All India") || s.eligibleStates.includes("All");
+          if (!isAllIndia && !s.eligibleStates.includes(selectedState)) {
+            return false;
+          }
+        }
 
-      // Income limit
-      if (s.maxIncome > 0 && s.maxIncome > maxIncomeFilter) return false;
+        // Fit Status
+        if (selectedFitStatus === "Eligible" && m.status !== "Eligible") return false;
+        if (selectedFitStatus === "Borderline" && m.status !== "Borderline") return false;
+        if (selectedFitStatus === "Saved" && !savedSet.has(s.id)) return false;
 
-      // Award limit
-      if (s.awardAmount < minAwardFilter) return false;
+        // Income limit
+        if (s.maxIncome > 0 && s.maxIncome > maxIncomeFilter) return false;
 
-      return true;
-    }).sort((a, b) => {
-      if (sortBy === 'award_high') {
-        return b.scholarship.awardAmount - a.scholarship.awardAmount;
-      }
-      if (sortBy === 'award_low') {
-        return a.scholarship.awardAmount - b.scholarship.awardAmount;
-      }
-      if (sortBy === 'deadline') {
-        return a.scholarship.daysLeft - b.scholarship.daysLeft;
-      }
-      // Relevance (default)
-      if (a.status === 'Eligible' && b.status !== 'Eligible') return -1;
-      if (b.status === 'Eligible' && a.status !== 'Eligible') return 1;
-      return b.score - a.score;
-    });
+        // Award limit
+        if (s.awardAmount < minAwardFilter) return false;
+
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === "award_high") {
+          return b.scholarship.awardAmount - a.scholarship.awardAmount;
+        }
+        if (sortBy === "award_low") {
+          return a.scholarship.awardAmount - b.scholarship.awardAmount;
+        }
+        if (sortBy === "deadline") {
+          return a.scholarship.daysLeft - b.scholarship.daysLeft;
+        }
+        // Relevance (default)
+        if (a.status === "Eligible" && b.status !== "Eligible") return -1;
+        if (b.status === "Eligible" && a.status !== "Eligible") return 1;
+        return b.score - a.score;
+      });
   }, [
     allMatches,
     verificationFilterTab,
@@ -230,14 +242,14 @@ export const ScholarshipsPage: React.FC = () => {
   ]);
 
   const resetFilters = () => {
-    setVerificationFilterTab('ALL');
-    setSearchQuery('');
-    setSelectedLevel('All');
-    setSelectedState('All');
-    setSelectedFitStatus('All');
+    setVerificationFilterTab("ALL");
+    setSearchQuery("");
+    setSelectedLevel("All");
+    setSelectedState("All");
+    setSelectedFitStatus("All");
     setMaxIncomeFilter(1000000);
     setMinAwardFilter(0);
-    setSortBy('relevance');
+    setSortBy("relevance");
   };
 
   // Admin Ingestion Handler with Duplicate Prevention
@@ -252,16 +264,16 @@ export const ScholarshipsPage: React.FC = () => {
       return;
     }
 
-    const schemeId = (newScheme.id || '').trim() || `sch-${Date.now()}`;
-    const schemeName = (newScheme.name || '').trim();
-    const schemeProvider = (newScheme.provider || '').trim();
+    const schemeId = (newScheme.id || "").trim() || `sch-${Date.now()}`;
+    const schemeName = (newScheme.name || "").trim();
+    const schemeProvider = (newScheme.provider || "").trim();
 
     // Duplicate Check: Look for matching ID or (name + provider)
     const duplicate = scholarships.find(
       (s) =>
         s.id.toLowerCase() === schemeId.toLowerCase() ||
         (s.name.trim().toLowerCase() === schemeName.toLowerCase() &&
-          s.provider.trim().toLowerCase() === schemeProvider.toLowerCase())
+          s.provider.trim().toLowerCase() === schemeProvider.toLowerCase()),
     );
 
     if (duplicate) {
@@ -277,33 +289,35 @@ export const ScholarshipsPage: React.FC = () => {
         id: schemeId,
         name: schemeName,
         provider: schemeProvider,
-        description: newScheme.description || 'Government scholarship scheme with official verification portal link.',
+        description:
+          newScheme.description ||
+          "Government scholarship scheme with official verification portal link.",
         awardAmount: Number(newScheme.awardAmount) || 0,
-        currency: 'INR',
-        educationLevel: newScheme.educationLevel || ['Undergraduate'],
-        eligibleCourses: newScheme.eligibleCourses || ['All'],
-        eligibleStates: newScheme.eligibleStates || ['All India'],
+        currency: "INR",
+        educationLevel: newScheme.educationLevel || ["Undergraduate"],
+        eligibleCourses: newScheme.eligibleCourses || ["All"],
+        eligibleStates: newScheme.eligibleStates || ["All India"],
         minimumMarks: Number(newScheme.minimumMarks) || 50,
         maximumFamilyIncome: Number(newScheme.maximumFamilyIncome) || 250000,
-        requiredDocuments: newScheme.requiredDocuments || ['Marksheet', 'Income Certificate'],
-        deadline: newScheme.deadline || '2026-12-31',
-        officialSourceUrl: (newScheme.officialSourceUrl || '').trim(),
-        verificationStatus: newScheme.verificationStatus || 'VERIFIED',
-        academicYear: newScheme.academicYear || '2025-26',
-        lastCheckedAt: new Date().toISOString().split('T')[0],
+        requiredDocuments: newScheme.requiredDocuments || ["Marksheet", "Income Certificate"],
+        deadline: newScheme.deadline || "2026-12-31",
+        officialSourceUrl: (newScheme.officialSourceUrl || "").trim(),
+        verificationStatus: newScheme.verificationStatus || "VERIFIED",
+        academicYear: newScheme.academicYear || "2025-26",
+        lastCheckedAt: new Date().toISOString().split("T")[0],
       };
 
       await createScholarshipRecord(docToSave);
 
       setAdminToast({
-        type: 'success',
+        type: "success",
         message: `Scheme "${schemeName}" successfully ingested into official Firestore catalog.`,
       });
       setAdminModalOpen(false);
       await loadScholarshipsFromFirestore();
     } catch (err: any) {
-      console.error('[Admin Ingest Error]', err);
-      setFormErrors({ general: err.message || 'Failed to ingest scholarship.' });
+      console.error("[Admin Ingest Error]", err);
+      setFormErrors({ general: err.message || "Failed to ingest scholarship." });
     } finally {
       setIsSubmitting(false);
     }
@@ -314,22 +328,26 @@ export const ScholarshipsPage: React.FC = () => {
     try {
       await updateScholarshipRecord(scholarshipId, { verificationStatus: nextStatus });
       setAdminToast({
-        type: 'success',
+        type: "success",
         message: `Status updated to ${nextStatus} for ${scholarshipId}.`,
       });
       await loadScholarshipsFromFirestore();
     } catch (err: any) {
       setAdminToast({
-        type: 'error',
+        type: "error",
         message: `Failed to update status: ${err.message}`,
       });
     }
   };
 
   // Counts for verification categories
-  const verifiedCount = scholarships.filter((s) => s.verificationStatus === 'VERIFIED').length;
-  const pendingCount = scholarships.filter((s) => s.verificationStatus === 'PENDING_VERIFICATION').length;
-  const expiredCount = scholarships.filter((s) => s.verificationStatus === 'EXPIRED_OR_CLOSED').length;
+  const verifiedCount = scholarships.filter((s) => s.verificationStatus === "VERIFIED").length;
+  const pendingCount = scholarships.filter(
+    (s) => s.verificationStatus === "PENDING_VERIFICATION",
+  ).length;
+  const expiredCount = scholarships.filter(
+    (s) => s.verificationStatus === "EXPIRED_OR_CLOSED",
+  ).length;
 
   return (
     <div className="space-y-6 pb-20">
@@ -337,13 +355,13 @@ export const ScholarshipsPage: React.FC = () => {
       {adminToast && (
         <div
           className={`p-3.5 rounded-2xl border text-xs flex items-center justify-between animate-in fade-in ${
-            adminToast.type === 'success'
-              ? 'bg-emerald-500/15 text-[#27C995] border-emerald-500/30'
-              : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+            adminToast.type === "success"
+              ? "bg-emerald-500/15 text-[#27C995] border-emerald-500/30"
+              : "bg-rose-500/15 text-rose-300 border-rose-500/30"
           }`}
         >
           <div className="flex items-center gap-2">
-            {adminToast.type === 'success' ? (
+            {adminToast.type === "success" ? (
               <CheckCircle2 className="w-4 h-4 shrink-0" />
             ) : (
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -387,8 +405,10 @@ export const ScholarshipsPage: React.FC = () => {
             Official Indian Scholarships Catalog
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Sourced strictly from the <strong>National Scholarship Portal (scholarships.gov.in)</strong>,{' '}
-            <strong>Jharkhand e-Kalyan (ekalyan.cgg.gov.in)</strong>, and <strong>AICTE (aicte-india.org)</strong>.
+            Sourced strictly from the{" "}
+            <strong>National Scholarship Portal (scholarships.gov.in)</strong>,{" "}
+            <strong>Jharkhand e-Kalyan (ekalyan.cgg.gov.in)</strong>, and{" "}
+            <strong>AICTE (aicte-india.org)</strong>.
           </p>
         </div>
 
@@ -410,7 +430,7 @@ export const ScholarshipsPage: React.FC = () => {
             className="flex items-center gap-1 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 border border-white/10 transition"
             title="Refresh database"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
             <span>Refresh</span>
           </button>
         </div>
@@ -450,18 +470,20 @@ export const ScholarshipsPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span>Catalog Total: <strong className="text-white">{scholarships.length}</strong></span>
+          <span>
+            Catalog Total: <strong className="text-white">{scholarships.length}</strong>
+          </span>
         </div>
       </div>
 
       {/* 4 Verification Status Tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-2">
         <button
-          onClick={() => setVerificationFilterTab('ALL')}
+          onClick={() => setVerificationFilterTab("ALL")}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
-            verificationFilterTab === 'ALL'
-              ? 'bg-[#8065FF] text-white shadow-md shadow-[#8065FF]/20'
-              : 'bg-white/5 text-slate-400 hover:text-white'
+            verificationFilterTab === "ALL"
+              ? "bg-[#8065FF] text-white shadow-md shadow-[#8065FF]/20"
+              : "bg-white/5 text-slate-400 hover:text-white"
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
@@ -469,11 +491,11 @@ export const ScholarshipsPage: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setVerificationFilterTab('VERIFIED')}
+          onClick={() => setVerificationFilterTab("VERIFIED")}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
-            verificationFilterTab === 'VERIFIED'
-              ? 'bg-[#27C995] text-slate-950 font-bold shadow-md shadow-[#27C995]/20'
-              : 'bg-white/5 text-slate-400 hover:text-white'
+            verificationFilterTab === "VERIFIED"
+              ? "bg-[#27C995] text-slate-950 font-bold shadow-md shadow-[#27C995]/20"
+              : "bg-white/5 text-slate-400 hover:text-white"
           }`}
         >
           <ShieldCheck className="w-3.5 h-3.5" />
@@ -481,11 +503,11 @@ export const ScholarshipsPage: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setVerificationFilterTab('PENDING_VERIFICATION')}
+          onClick={() => setVerificationFilterTab("PENDING_VERIFICATION")}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
-            verificationFilterTab === 'PENDING_VERIFICATION'
-              ? 'bg-amber-400 text-slate-950 font-bold shadow-md shadow-amber-400/20'
-              : 'bg-white/5 text-slate-400 hover:text-white'
+            verificationFilterTab === "PENDING_VERIFICATION"
+              ? "bg-amber-400 text-slate-950 font-bold shadow-md shadow-amber-400/20"
+              : "bg-white/5 text-slate-400 hover:text-white"
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
@@ -493,11 +515,11 @@ export const ScholarshipsPage: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setVerificationFilterTab('EXPIRED_OR_CLOSED')}
+          onClick={() => setVerificationFilterTab("EXPIRED_OR_CLOSED")}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
-            verificationFilterTab === 'EXPIRED_OR_CLOSED'
-              ? 'bg-slate-700 text-white font-bold'
-              : 'bg-white/5 text-slate-400 hover:text-white'
+            verificationFilterTab === "EXPIRED_OR_CLOSED"
+              ? "bg-slate-700 text-white font-bold"
+              : "bg-white/5 text-slate-400 hover:text-white"
           }`}
         >
           <Archive className="w-3.5 h-3.5" />
@@ -521,7 +543,7 @@ export const ScholarshipsPage: React.FC = () => {
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => setSearchQuery("")}
                 className="absolute right-3 top-2.5 text-slate-400 hover:text-white"
               >
                 <X className="w-4 h-4" />
@@ -621,11 +643,11 @@ export const ScholarshipsPage: React.FC = () => {
 
         {/* Active Filter Clear button */}
         {(searchQuery ||
-          selectedLevel !== 'All' ||
-          selectedState !== 'All' ||
-          selectedFitStatus !== 'All' ||
+          selectedLevel !== "All" ||
+          selectedState !== "All" ||
+          selectedFitStatus !== "All" ||
           minAwardFilter > 0 ||
-          verificationFilterTab !== 'ALL') && (
+          verificationFilterTab !== "ALL") && (
           <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
             <span className="text-slate-400">Custom filters applied</span>
             <button
@@ -643,7 +665,10 @@ export const ScholarshipsPage: React.FC = () => {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="glass-card rounded-3xl p-6 border border-white/10 animate-pulse space-y-4">
+            <div
+              key={i}
+              className="glass-card rounded-3xl p-6 border border-white/10 animate-pulse space-y-4"
+            >
               <div className="h-4 bg-white/10 rounded w-1/3" />
               <div className="h-6 bg-white/10 rounded w-3/4" />
               <div className="h-12 bg-white/5 rounded w-full" />
@@ -655,13 +680,15 @@ export const ScholarshipsPage: React.FC = () => {
         /* Clean Empty State Handling */
         <div className="glass-panel rounded-3xl p-12 text-center border border-white/10">
           <Filter className="w-10 h-10 text-slate-500 mx-auto mb-3" />
-          <h3 className="font-heading text-lg font-bold text-white">No Schemes Found In This Category</h3>
+          <h3 className="font-heading text-lg font-bold text-white">
+            No Schemes Found In This Category
+          </h3>
           <p className="text-xs text-slate-400 max-w-md mx-auto mt-1 mb-4 leading-relaxed">
-            {verificationFilterTab === 'PENDING_VERIFICATION'
-              ? 'There are currently no schemes in pending verification status. All schemes on display have completed verification.'
-              : verificationFilterTab === 'EXPIRED_OR_CLOSED'
-              ? 'No concluded or archived application cycles match your filter parameters.'
-              : 'Try adjusting your search criteria, clearing filters, or switching verification tabs.'}
+            {verificationFilterTab === "PENDING_VERIFICATION"
+              ? "There are currently no schemes in pending verification status. All schemes on display have completed verification."
+              : verificationFilterTab === "EXPIRED_OR_CLOSED"
+                ? "No concluded or archived application cycles match your filter parameters."
+                : "Try adjusting your search criteria, clearing filters, or switching verification tabs."}
           </p>
           <button
             onClick={resetFilters}
@@ -687,25 +714,29 @@ export const ScholarshipsPage: React.FC = () => {
                 <div className="mt-2 p-2.5 rounded-2xl bg-[#080D1B] border border-white/15 flex items-center justify-between text-[11px]">
                   <span className="text-slate-400">Admin Review:</span>
                   <div className="flex items-center gap-1.5">
-                    {match.scholarship.verificationStatus !== 'VERIFIED' && (
+                    {match.scholarship.verificationStatus !== "VERIFIED" && (
                       <button
-                        onClick={() => handleAdminUpdateStatus(match.scholarship.id, 'VERIFIED')}
+                        onClick={() => handleAdminUpdateStatus(match.scholarship.id, "VERIFIED")}
                         className="px-2 py-0.5 rounded bg-emerald-500/20 text-[#27C995] font-semibold hover:bg-emerald-500/30 transition"
                       >
                         Approve Verified
                       </button>
                     )}
-                    {match.scholarship.verificationStatus !== 'PENDING_VERIFICATION' && (
+                    {match.scholarship.verificationStatus !== "PENDING_VERIFICATION" && (
                       <button
-                        onClick={() => handleAdminUpdateStatus(match.scholarship.id, 'PENDING_VERIFICATION')}
+                        onClick={() =>
+                          handleAdminUpdateStatus(match.scholarship.id, "PENDING_VERIFICATION")
+                        }
                         className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-semibold hover:bg-amber-500/30 transition"
                       >
                         Set Pending
                       </button>
                     )}
-                    {match.scholarship.verificationStatus !== 'EXPIRED_OR_CLOSED' && (
+                    {match.scholarship.verificationStatus !== "EXPIRED_OR_CLOSED" && (
                       <button
-                        onClick={() => handleAdminUpdateStatus(match.scholarship.id, 'EXPIRED_OR_CLOSED')}
+                        onClick={() =>
+                          handleAdminUpdateStatus(match.scholarship.id, "EXPIRED_OR_CLOSED")
+                        }
                         className="px-2 py-0.5 rounded bg-slate-700 text-slate-300 font-semibold hover:bg-slate-600 transition"
                       >
                         Mark Closed
@@ -739,7 +770,8 @@ export const ScholarshipsPage: React.FC = () => {
             </div>
 
             <p className="text-xs text-slate-400">
-              Admin authorization active (<strong>jiya72637@gmail.com</strong>). Strict URL and duplicate validation enforced.
+              Admin authorization active (<strong>jiya72637@gmail.com</strong>). Strict URL and
+              duplicate validation enforced.
             </p>
 
             {formErrors.general && (
@@ -758,21 +790,19 @@ export const ScholarshipsPage: React.FC = () => {
                   type="text"
                   required
                   placeholder="e.g. nsp-post-matric-st"
-                  value={newScheme.id || ''}
+                  value={newScheme.id || ""}
                   onChange={(e) => setNewScheme({ ...newScheme, id: e.target.value })}
                   className="w-full bg-[#080D1B] border border-white/15 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-[#8065FF]"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">
-                  Scheme Name *
-                </label>
+                <label className="block text-slate-300 font-semibold mb-1">Scheme Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. National Fellowship for ST Scholars"
-                  value={newScheme.name || ''}
+                  value={newScheme.name || ""}
                   onChange={(e) => setNewScheme({ ...newScheme, name: e.target.value })}
                   className="w-full bg-[#080D1B] border border-white/15 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-[#8065FF]"
                 />
@@ -789,7 +819,7 @@ export const ScholarshipsPage: React.FC = () => {
                   type="text"
                   required
                   placeholder="e.g. Ministry of Tribal Affairs, Government of India"
-                  value={newScheme.provider || ''}
+                  value={newScheme.provider || ""}
                   onChange={(e) => setNewScheme({ ...newScheme, provider: e.target.value })}
                   className="w-full bg-[#080D1B] border border-white/15 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-[#8065FF]"
                 />
@@ -806,8 +836,10 @@ export const ScholarshipsPage: React.FC = () => {
                   type="url"
                   required
                   placeholder="https://scholarships.gov.in/..."
-                  value={newScheme.officialSourceUrl || ''}
-                  onChange={(e) => setNewScheme({ ...newScheme, officialSourceUrl: e.target.value })}
+                  value={newScheme.officialSourceUrl || ""}
+                  onChange={(e) =>
+                    setNewScheme({ ...newScheme, officialSourceUrl: e.target.value })
+                  }
                   className="w-full bg-[#080D1B] border border-white/15 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-[#8065FF]"
                 />
                 {formErrors.officialSourceUrl && (
@@ -825,7 +857,9 @@ export const ScholarshipsPage: React.FC = () => {
                     required
                     min="0"
                     value={newScheme.awardAmount || 50000}
-                    onChange={(e) => setNewScheme({ ...newScheme, awardAmount: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setNewScheme({ ...newScheme, awardAmount: Number(e.target.value) })
+                    }
                     className="w-full bg-[#080D1B] border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#8065FF]"
                   />
                 </div>
@@ -835,12 +869,16 @@ export const ScholarshipsPage: React.FC = () => {
                     Verification Status *
                   </label>
                   <select
-                    value={newScheme.verificationStatus || 'VERIFIED'}
-                    onChange={(e) => setNewScheme({ ...newScheme, verificationStatus: e.target.value as any })}
+                    value={newScheme.verificationStatus || "VERIFIED"}
+                    onChange={(e) =>
+                      setNewScheme({ ...newScheme, verificationStatus: e.target.value as any })
+                    }
                     className="w-full bg-[#080D1B] border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#8065FF]"
                   >
                     <option value="VERIFIED">VERIFIED (Official Scheme)</option>
-                    <option value="PENDING_VERIFICATION">PENDING_VERIFICATION (Circular pending)</option>
+                    <option value="PENDING_VERIFICATION">
+                      PENDING_VERIFICATION (Circular pending)
+                    </option>
                     <option value="EXPIRED_OR_CLOSED">EXPIRED_OR_CLOSED (Concluded cycle)</option>
                   </select>
                 </div>
@@ -856,7 +894,9 @@ export const ScholarshipsPage: React.FC = () => {
                     min="0"
                     max="100"
                     value={newScheme.minimumMarks || 50}
-                    onChange={(e) => setNewScheme({ ...newScheme, minimumMarks: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setNewScheme({ ...newScheme, minimumMarks: Number(e.target.value) })
+                    }
                     className="w-full bg-[#080D1B] border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#8065FF]"
                   />
                 </div>
@@ -869,7 +909,9 @@ export const ScholarshipsPage: React.FC = () => {
                     type="number"
                     min="0"
                     value={newScheme.maximumFamilyIncome || 250000}
-                    onChange={(e) => setNewScheme({ ...newScheme, maximumFamilyIncome: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setNewScheme({ ...newScheme, maximumFamilyIncome: Number(e.target.value) })
+                    }
                     className="w-full bg-[#080D1B] border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#8065FF]"
                   />
                 </div>
@@ -881,7 +923,7 @@ export const ScholarshipsPage: React.FC = () => {
                 </label>
                 <input
                   type="date"
-                  value={newScheme.deadline || '2026-12-31'}
+                  value={newScheme.deadline || "2026-12-31"}
                   onChange={(e) => setNewScheme({ ...newScheme, deadline: e.target.value })}
                   className="w-full bg-[#080D1B] border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#8065FF]"
                 />
@@ -900,7 +942,7 @@ export const ScholarshipsPage: React.FC = () => {
                   disabled={isSubmitting}
                   className="px-5 py-2 rounded-xl bg-[#8065FF] hover:bg-[#6c48ff] text-white text-xs font-bold transition flex items-center gap-1.5"
                 >
-                  {isSubmitting ? 'Ingesting...' : 'Confirm Ingestion'}
+                  {isSubmitting ? "Ingesting..." : "Confirm Ingestion"}
                 </button>
               </div>
             </form>

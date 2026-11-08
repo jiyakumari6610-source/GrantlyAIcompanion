@@ -1,7 +1,7 @@
-import React from 'react';
-import { Navigate, useLocation } from '@/lib/router-compat';
-import { useAuth } from '../context/AuthContext';
-import { Loader2 } from 'lucide-react';
+import React from "react";
+import { Navigate, useLocation } from "@/lib/router-compat";
+import { useAuth } from "../context/AuthContext";
+import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
