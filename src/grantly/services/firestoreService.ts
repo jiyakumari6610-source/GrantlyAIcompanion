@@ -83,6 +83,7 @@ function scholarshipToDoc(s: Scholarship): ScholarshipDocument {
     officialSourceUrl: s.officialSourceUrl,
     verificationStatus: s.verificationStatus || "VERIFIED",
     academicYear: s.academicYear || "2025-26",
+    tags: s.tags || [],
     disclaimer: s.disclaimer,
   };
 }

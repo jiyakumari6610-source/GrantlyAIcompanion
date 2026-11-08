@@ -34,6 +34,8 @@ export interface ScholarshipDocument {
   verificationStatus: string;
   academicYear?: string;
   lastCheckedAt?: string;
+  tags?: string[];
+  disclaimer?: string;
   createdAt?: string;
   updatedAt?: string;
 }
