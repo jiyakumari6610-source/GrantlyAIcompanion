@@ -72,7 +72,7 @@ function scholarshipToDoc(s: Scholarship): ScholarshipDocument {
     provider: s.provider,
     description: s.description,
     awardAmount: s.awardAmount,
-    currency: s.currency,
+    currency: s.currency || "INR",
     educationLevel: s.educationLevels?.[0] || "Undergraduate",
     eligibleCourses: s.eligibleCourses || ["All"],
     eligibleStates: s.eligibleStates || ["All India"],
