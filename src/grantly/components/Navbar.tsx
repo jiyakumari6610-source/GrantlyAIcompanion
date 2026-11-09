@@ -175,7 +175,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
               </Link>
               <button
                 onClick={handleSignOut}
-                title="Sign out from Firebase"
+                title="Sign out"
                 className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-white/5 border border-transparent hover:border-rose-500/20 transition"
               >
                 <LogOut className="w-4 h-4" />

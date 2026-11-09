@@ -60,20 +60,58 @@ export async function loginWithEmail(email: string, pass: string) {
   return data.user;
 }
 
-export async function loginWithGoogle(): Promise<{ redirected: boolean }> {
+export interface GoogleAuthResult {
+  redirected: boolean;
+  authUrl?: string;
+  popupBlocked?: boolean;
+}
+
+export async function loginWithGoogle(): Promise<GoogleAuthResult> {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
+  console.log("[Auth] Initiating Google sign-in with redirect target:", `${origin}/dashboard`);
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
       redirectTo: `${origin}/dashboard`,
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+      skipBrowserRedirect: true,
     },
   });
-  if (error) throw authError(error);
-  if (data?.url && typeof window !== "undefined") {
-    window.location.href = data.url;
-    return { redirected: true };
+  if (error) {
+    console.error("[Auth] Google sign-in request error:", error.message);
+    throw authError(error);
   }
-  return { redirected: Boolean(data?.url) };
+
+  if (data?.url && typeof window !== "undefined") {
+    const isInIframe = window.self !== window.top;
+    if (isInIframe) {
+      console.log("[Auth] Preview iframe environment detected. Opening Google OAuth in popup...");
+      const width = 500;
+      const height = 650;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+      const popup = window.open(
+        data.url,
+        "google_oauth_popup",
+        `width=${width},height=${height},left=${left},top=${top},status=no,resizable=yes,scrollbars=yes`
+      );
+
+      if (!popup || popup.closed || typeof popup.closed === "undefined") {
+        console.warn("[Auth] Popup blocked by browser settings.");
+        return { redirected: false, authUrl: data.url, popupBlocked: true };
+      }
+      return { redirected: true, authUrl: data.url, popupBlocked: false };
+    } else {
+      console.log("[Auth] Standard tab detected. Navigating directly to OAuth URL...");
+      window.location.href = data.url;
+      return { redirected: true, authUrl: data.url, popupBlocked: false };
+    }
+  }
+
+  return { redirected: false };
 }
 
 export async function sendPasswordReset(email: string): Promise<void> {

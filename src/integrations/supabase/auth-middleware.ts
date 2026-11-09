@@ -5,10 +5,14 @@ import type { Database } from "./types";
 
 export const requireSupabaseAuth = createMiddleware({ type: "function" }).server(
   async ({ next }) => {
-    const SUPABASE_URL =
+    const rawUrl =
       process.env.SUPABASE_URL ||
       process.env.VITE_SUPABASE_URL ||
-      "https://grantly-demo.supabase.co";
+      "https://tvesueyreuvjtllukceu.supabase.co";
+    const SUPABASE_URL =
+      rawUrl.includes("grantly-demo") || rawUrl.includes("wwwyxhlkunsvpqlrrlrn") || rawUrl.includes("your-project")
+        ? "https://tvesueyreuvjtllukceu.supabase.co"
+        : rawUrl;
     const SUPABASE_PUBLISHABLE_KEY =
       process.env.SUPABASE_PUBLISHABLE_KEY ||
       process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||

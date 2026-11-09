@@ -4,6 +4,11 @@ import { GuestRoute } from "@/grantly/AppLayout";
 
 export const Route = createFileRoute("/login")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>) => ({
+    code: typeof search.code === "string" ? search.code : undefined,
+    error: typeof search.error === "string" ? search.error : undefined,
+    error_description: typeof search.error_description === "string" ? search.error_description : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — Grantly AI" },

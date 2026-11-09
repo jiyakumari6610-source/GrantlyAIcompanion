@@ -1176,7 +1176,7 @@ export const DocumentsPage: React.FC = () => {
                   <FileText className="w-12 h-12 text-[#42D9F5] mx-auto" />
                   <p className="text-xs text-white font-bold">{inspectingDoc.name}</p>
                   <p className="text-[11px] text-slate-400">
-                    Encrypted file stored in Firebase Vault.
+                    Encrypted file stored in Private Cloud Vault.
                   </p>
                   <button
                     onClick={() => handleDownload(inspectingDoc)}
@@ -1228,11 +1228,11 @@ export const DocumentsPage: React.FC = () => {
             <div className="space-y-3 text-xs text-slate-300 leading-relaxed">
               <p>
                 <strong>1. Authenticated Isolation:</strong> Every certificate uploaded is scoped
-                strictly to your authenticated Firebase UID (
+                strictly to your authenticated account UID (
                 <code className="text-[#42D9F5]">{user?.uid || "Active Session"}</code>).
               </p>
               <p>
-                <strong>2. Zero Public URLs:</strong> Storage files and Firestore metadata cannot be
+                <strong>2. Zero Public URLs:</strong> Storage files and database records cannot be
                 read by any unauthorized user or public bot.
               </p>
               <p>

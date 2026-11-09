@@ -311,7 +311,7 @@ export const ScholarshipsPage: React.FC = () => {
 
       setAdminToast({
         type: "success",
-        message: `Scheme "${schemeName}" successfully ingested into official Firestore catalog.`,
+        message: `Scheme "${schemeName}" successfully ingested into official catalog.`,
       });
       setAdminModalOpen(false);
       await loadScholarshipsFromFirestore();

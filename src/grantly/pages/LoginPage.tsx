@@ -9,6 +9,7 @@ import {
   AlertCircle,
   CheckCircle2,
   KeyRound,
+  ExternalLink,
 } from "lucide-react";
 import { loginWithEmail, loginWithGoogle, sendPasswordReset } from "../services/firebase";
 import { useAuth } from "../context/AuthContext";
@@ -16,13 +17,14 @@ import { useAuth } from "../context/AuthContext";
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [popupBlockedUrl, setPopupBlockedUrl] = useState<string | null>(null);
 
   // Forgot password modal state
   const [showResetModal, setShowResetModal] = useState(false);
@@ -31,6 +33,45 @@ export const LoginPage: React.FC = () => {
   const [resetLoading, setResetLoading] = useState(false);
 
   const redirectPath = (location.state as any)?.from?.pathname || "/dashboard";
+
+  // Watch for authenticated session (such as when returning from OAuth)
+  React.useEffect(() => {
+    if (!authLoading && user) {
+      console.log("[LoginPage] Authenticated user detected. Redirecting to:", redirectPath);
+      navigate(redirectPath, { replace: true });
+    }
+  }, [user, authLoading, navigate, redirectPath]);
+
+  // Check URL query and hash parameters for any OAuth errors returned from the auth provider
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashStr = window.location.hash.startsWith("#")
+      ? window.location.hash.slice(1)
+      : window.location.hash;
+    const hashParams = new URLSearchParams(hashStr);
+
+    const errorDesc =
+      searchParams.get("error_description") ||
+      hashParams.get("error_description") ||
+      searchParams.get("error") ||
+      hashParams.get("error");
+
+    if (errorDesc) {
+      const decoded = decodeURIComponent(errorDesc.replace(/\+/g, " "));
+      console.error("[LoginPage] OAuth error from URL parameter:", decoded);
+      if (
+        decoded.toLowerCase().includes("missing oauth secret") ||
+        decoded.toLowerCase().includes("unsupported provider")
+      ) {
+        setErrorMsg(
+          "Google OAuth configuration error: Provider secret is missing or misconfigured in the active Supabase project. Verify OAuth settings in your Supabase Dashboard."
+        );
+      } else {
+        setErrorMsg(decoded);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,14 +107,37 @@ export const LoginPage: React.FC = () => {
 
   const handleGoogleLogin = async () => {
     setErrorMsg(null);
+    setPopupBlockedUrl(null);
     setGoogleLoading(true);
     try {
-      const { redirected } = await loginWithGoogle();
-      if (!redirected) navigate(redirectPath, { replace: true });
+      const result = await loginWithGoogle();
+      if (result.popupBlocked && result.authUrl) {
+        setPopupBlockedUrl(result.authUrl);
+      } else if (!result.redirected && !result.popupBlocked) {
+        navigate(redirectPath, { replace: true });
+      }
     } catch (err: any) {
       console.error("Google login error:", err);
       if (err.code !== "auth/popup-closed-by-user") {
-        setErrorMsg("Google sign-in could not be completed. Please try again.");
+        const rawMsg = err.message || "";
+        if (
+          rawMsg.toLowerCase().includes("missing oauth secret") ||
+          rawMsg.toLowerCase().includes("unsupported provider")
+        ) {
+          setErrorMsg(
+            "Google OAuth configuration error: Provider secret is missing or misconfigured in the active Supabase project. Verify OAuth settings in your Supabase Dashboard."
+          );
+        } else if (
+          rawMsg.toLowerCase().includes("403") ||
+          rawMsg.toLowerCase().includes("access_denied") ||
+          rawMsg.toLowerCase().includes("disallowed_useragent")
+        ) {
+          setErrorMsg(
+            "Google Access Blocked (Error 403): If your Google Cloud OAuth app is in 'Testing' mode, please ensure your email (jiyakumari6610@gmail.com) is added under Google Cloud Console > OAuth consent screen > Test users. Alternatively, open the preview in a separate browser tab."
+          );
+        } else {
+          setErrorMsg(rawMsg || "Google sign-in could not be completed. Please try again.");
+        }
       }
     } finally {
       setGoogleLoading(false);
@@ -134,6 +198,26 @@ export const LoginPage: React.FC = () => {
           </div>
         )}
 
+        {/* Popup Blocked Fallback for Preview iframes */}
+        {popupBlockedUrl && (
+          <div className="mb-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex flex-col gap-2.5">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
+              <span>
+                Browser blocked the authentication popup. Click below to open Google Sign-In directly in a new tab:
+              </span>
+            </div>
+            <a
+              href={popupBlockedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold rounded-lg text-xs hover:brightness-110 transition-all shadow-md"
+            >
+              Open Google Sign-In in New Tab <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -185,7 +269,7 @@ export const LoginPage: React.FC = () => {
             disabled={loading || googleLoading}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-[#8065FF] to-[#603bfa] hover:brightness-110 text-white font-bold text-xs shadow-lg shadow-[#8065FF]/30 transition flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
           >
-            {loading ? "Authenticating with Firebase..." : "Sign In with Email"}
+            {loading ? "Authenticating..." : "Sign In with Email"}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
@@ -231,7 +315,7 @@ export const LoginPage: React.FC = () => {
         <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-center text-[11px] text-slate-500">
           <div className="flex items-center gap-1.5 text-[#27C995]">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Firebase Auth Encrypted Session</span>
+            <span>Encrypted Session</span>
           </div>
         </div>
       </div>

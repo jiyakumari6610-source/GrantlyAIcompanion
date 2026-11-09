@@ -6,6 +6,11 @@ import { Link, useNavigate } from "@/lib/router-compat";
 
 export const Route = createFileRoute("/reset-password")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>) => ({
+    code: typeof search.code === "string" ? search.code : undefined,
+    error: typeof search.error === "string" ? search.error : undefined,
+    error_description: typeof search.error_description === "string" ? search.error_description : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Choose a new password — Grantly AI" },
@@ -28,6 +33,7 @@ function ResetPasswordPage() {
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("[ResetPassword] Auth state change:", event);
       if (event === "PASSWORD_RECOVERY" || session) setReady(true);
     });
     supabase.auth.getSession().then(({ data }) => data.session && setReady(true));
